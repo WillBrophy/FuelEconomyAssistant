@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="5dp"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/economy_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="left|center_vertical"
+        android:text="Economy (mgp)"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/economy_value"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/black_border"
+        android:gravity="right|center_vertical"
+        android:text="34"
+        android:textSize="32sp" />
+
+    <TextView
+        android:id="@+id/speed_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="left|center_vertical"
+        android:text="Speed (mph)"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/speed_value"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/black_border"
+        android:gravity="right|center_vertical"
+        android:text="12"
+        android:textSize="32sp" />
+
+    <TextView
+        android:id="@+id/engine_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="left|center_vertical"
+        android:text="@string/engine_speed"
+        android:textSize="24sp" />
+
+    <TextView
+        android:id="@+id/engine_value"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/black_border"
+        android:gravity="right|center_vertical"
+        android:text="2700"
+        android:textSize="32sp" />
+
+</LinearLayout>

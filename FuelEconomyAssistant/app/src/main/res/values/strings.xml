@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Fuel Economy Assistant</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="economy">Economy (%s):</string>
+    <string name="speed">Speed (%s):</string>
+    <string name="engine_speed">Engine RPM:</string>
+    <string name="history">History (%s):</string>
+    <string name="map">Map</string>
+    <string name="settings">Settings</string>
+    <string name="title_activity_map">MapActivity</string>
+    <string name="stations_format">There are %d gas stations nearby!</string>
+    <string name="back">Back</string>
+    <string name="fuel_level">Fuel Level</string>
+
+</resources>
