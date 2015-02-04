@@ -22,4 +22,9 @@ dependencies {
     compile 'com.android.support:support-v4:19.1.0'
     compile files('libs/GraphView-4.0.0.jar')
     compile 'com.google.android.gms:play-services:6.5.87'
+    compile 'com.google.api-client:google-api-client-android:1.18.0-rc'
+    compile 'com.google.http-client:google-http-client-jackson:1.18.0-rc'
+    compile(group: 'com.google.http-client', name: 'google-http-client-gson',
+            version: '1.17.0-rc')
+
 }
