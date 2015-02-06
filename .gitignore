@@ -24,3 +24,17 @@ proguard/
 
 # Log Files
 *.log
+.idea/.name
+.idea/FuelEconomyAssistant.iml
+.idea/compiler.xml
+.idea/copyright/profiles_settings.xml
+.idea/encodings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/scopes/scope_settings.xml
+.idea/vcs.xml
+.idea/workspace.xml
+FuelEconomyAssistant/.idea/libraries/play_services_6_5_87.xml
+FuelEconomyAssistant/.idea/misc.xml
+FuelEconomyAssistant/.idea/workspace.xml
+FuelEconomyAssistant/app/app.iml

@@ -10,12 +10,21 @@ import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.TextView;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends Activity {
 	
 	private Button mSettingsButton;
 	private Button mMapButton;
 	private GraphViewFEA mGraph;
+
+    private TextView mEconomy;
+    private TextView mSpeed;
+    private TextView mEngine;
+    private Timer mUpdateTimer;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +33,9 @@ public class MainActivity extends Activity {
 		mSettingsButton = (Button) findViewById(R.id.settings_button);
 		mMapButton = (Button) findViewById(R.id.map_button);
 		mGraph = (GraphViewFEA) findViewById(R.id.graph_view);
+        mEconomy = (TextView) findViewById(R.id.economy_value);
+        mSpeed = (TextView) findViewById(R.id.speed_value);
+        mEngine = (TextView) findViewById(R.id.engine_value);
 		
 		mSettingsButton.setOnClickListener(new OnClickListener() {
 			
@@ -51,6 +63,14 @@ public class MainActivity extends Activity {
 		          new DataPoint(4, 6)
 		});
 		mGraph.addSeries(series);
+
+        Timer mUpdateTimer = new Timer();
+        mUpdateTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                updateValues();
+            }
+        }, 1000, 1000);
 	}
 
 	@Override
@@ -59,5 +79,10 @@ public class MainActivity extends Activity {
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
+
+    private void updateValues(){
+        //Update the economy, speed, engine
+        
+    }
 
 }
