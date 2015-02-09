@@ -86,7 +86,7 @@ public class MainActivity extends Activity {
             }
         }, 1000, 1000);
 
-        //enableBluetooth();
+        enableBluetooth();
     }
 
     @Override
@@ -181,6 +181,7 @@ public class MainActivity extends Activity {
             if (resultCode != RESULT_OK) {
                 //addToReport("Request to enable bluetooth was denied");
             }else{
+                checkBluetooth();
                 //addToReport("Bluetooth adapter successfully enabled");
             }
         }
