@@ -1,6 +1,8 @@
 package com.example.fueleconomyassistant;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -30,11 +32,13 @@ import com.google.api.client.json.jackson.JacksonFactory;
 import com.google.gson.Gson;
 //import com.google.android.maps.MapView;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.location.Location;
 import android.location.LocationListener;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
@@ -44,6 +48,7 @@ import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -100,7 +105,22 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
         mLocationRequest.setInterval(mLocUpdInterval);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
 
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Place p = mPlaces.get(i);
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=" +
+                p.geometry.location.lat + "," + p.geometry.location.lng));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                if(intent.resolveActivity(getPackageManager()) !=  null){
+                    startActivity(intent);
+                }
 
+//                Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
+//                        Uri.parse("http://maps.google.com/maps?daddr="+  p.geometry.location.lat + "," + p.geometry.location.lng));
+//                startActivity(intent);
+            }
+        });
 //		MapView mv = (MapView) findViewById(R.id.mapView);
 		
 	}
@@ -136,12 +156,12 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
         mLastLocation = (LocationServices.FusedLocationApi.getLastLocation(
                 mGoogleApiClient));
         if (mLastLocation != null) {
-            LatLng latlng = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-            MarkerOptions marker = new MarkerOptions();
-            marker.position(latlng);
-            marker.title("You are here!");
-            mMap.addMarker(marker);
-            Log.d("WILL", "added marker");
+//            LatLng latlng = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+//            MarkerOptions marker = new MarkerOptions();
+//            marker.position(latlng);
+//            marker.title("You are here!");
+//            mMap.addMarker(marker);
+//            Log.d("WILL", "added marker");
             (new RunTask()).execute();
 //            mMap.clear();
         }else{
@@ -316,6 +336,16 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
                     }
                 }
             }
+            Collections.sort(mPlaces, new Comparator<Place>() {
+                @Override
+                public int compare(Place place, Place place2) {
+                    float[] dist1 = new float[1];
+                    float[] dist2 = new float[1];
+                    Location.distanceBetween(mLastLocation.getLatitude(), mLastLocation.getLongitude(), place.geometry.location.lat, place.geometry.location.lng, dist1);
+                    Location.distanceBetween(mLastLocation.getLatitude(), mLastLocation.getLongitude(), place2.geometry.location.lat, place2.geometry.location.lng, dist2);
+                    return Float.compare(dist1[0], dist2[0]);
+                }
+            });
             mAdapter.notifyDataSetChanged();
             LatLngBounds bounds = builder.build();
             mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 20));
