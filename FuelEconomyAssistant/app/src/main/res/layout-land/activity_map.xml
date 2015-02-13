@@ -34,6 +34,7 @@
         android:id="@+id/fuel_and_stations_container"
         android:layout_width="0dp"
         android:layout_height="match_parent"
+        android:paddingLeft="10dp"
         android:layout_weight="1">
         <TextView
             android:id="@+id/fuel_level_title"

@@ -6,48 +6,61 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".MainActivity" >
+    tools:context=".MainActivity">
 
     <TextView
-        android:id="@+id/textView1"
+        android:id="@+id/graph_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
         android:layout_marginTop="5dp"
         android:text="History (mpg)" />
 
-    <Button
-        android:id="@+id/settings_button"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/buttons_holder"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignEnd="@id/graph_view"
         android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@id/data_layout_container"
-        android:text="@string/settings" />
+        android:layout_alignStart="@id/graph_view"
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/map_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/settings_button"
-        android:layout_alignParentBottom="true"
-        android:text="@string/map" />
+        <Button
+            android:id="@+id/settings_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/settings" />
+
+        <Button
+            android:id="@+id/map_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/map" />
+    </LinearLayout>
+
 
     <include
         android:id="@+id/data_layout_container"
+        layout="@layout/data_layout"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_gravity="center_vertical"
+        android:layout_alignBottom="@id/buttons_holder"
         android:layout_alignParentLeft="true"
-        layout="@layout/data_layout" />
+        android:layout_alignTop="@id/graph_title"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="3dp"
+        android:layout_marginRight="10dp" />
 
     <com.example.fueleconomyassistant.GraphViewFEA
         android:id="@+id/graph_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/data_layout_container"
-        android:layout_below="@+id/textView1"
-        android:layout_above="@id/map_button"
-        android:layout_centerHorizontal="true" />
+        android:layout_above="@id/buttons_holder"
+        android:layout_below="@+id/graph_title"
+        android:layout_centerHorizontal="true"
+        android:layout_toRightOf="@+id/data_layout_container" />
 
 </RelativeLayout>

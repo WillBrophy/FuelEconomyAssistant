@@ -16,29 +16,35 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="14dp"
         android:text="History (mpg)" />
-
-    <Button
-        android:id="@+id/settings_button"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/buttons_holder"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:text="@string/settings" />
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/map_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/settings_button"
-        android:layout_centerHorizontal="true"
-        android:text="@string/map" />
+        <Button
+            android:id="@+id/settings_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/settings" />
+
+        <Button
+            android:id="@+id/map_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/map" />
+    </LinearLayout>
 
     <include
         android:id="@+id/data_layout_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/map_button"
+        android:layout_above="@+id/buttons_holder"
         android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
         layout="@layout/data_layout" />
 
     <com.example.fueleconomyassistant.GraphViewFEA
