@@ -15,13 +15,7 @@
         android:minSdkVersion="17"
         android:targetSdkVersion="18" />
 
-    <service
-        android:enabled="true"
-        android:name=".ObdDataCollectionService"
 
-        android:label="@string/obd_service_name"
-        >
-    </service>
 
     <application
         android:allowBackup="true"
@@ -54,6 +48,6 @@
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyAIaGJgPO2fpBli-G02DOf5dLUhiN94_XI"/>
+        <service android:name=".ObdDataCollectionService"/>
     </application>
-
 </manifest>

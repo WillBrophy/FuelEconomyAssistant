@@ -5,9 +5,14 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -32,6 +37,8 @@ public class MainActivity extends Activity {
     private Button mMapButton;
     private GraphViewFEA mGraph;
 
+    private ServiceConnection mConnection;
+
     private TextView mEconomy;
     private TextView mSpeed;
     private TextView mEngine;
@@ -39,7 +46,7 @@ public class MainActivity extends Activity {
 
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothSocket mSocket;
-    ObdDataCollectionService mService;
+
     private boolean mBound;
 
     @Override
@@ -91,45 +98,52 @@ public class MainActivity extends Activity {
         enableBluetooth();
 
     }
-    /*
+    //---------------------------------------------Code To Bind to OBD Service------------------------------
+    //----------------------------------------------------------------------------------------------
+    ObdDataCollectionService mService;
+
     @Override
-    public void onStart(){
+    protected void onStart() {
         super.onStart();
-        beginObdService();
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        // Bind to LocalService
+        mConnection = new ServiceConnection() {
+
+            @Override
+            public void onServiceConnected(ComponentName className,
+                                           IBinder service) {
+                // We've bound to LocalService, cast the IBinder and get LocalService instance
+                ObdDataCollectionService.LocalBinder binder = (ObdDataCollectionService.LocalBinder) service;
+                mService = binder.getService();
+                mBound = true;
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName arg0) {
+                mBound = false;
+            }
+        };
+        Intent intent = new Intent(this, ObdDataCollectionService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        //String s = "" + mService.getConfirmationString();
+        //Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
+        Log.d("s", "Intent Created and Service Bound");
+        if(mBound) {
+            Log.d("s", "mBound = TRUE");
         }
-        ((ObdDataCollectionService)mService).testWithToast();
     }
 
-    public void beginObdService(){
-        //startService(new Intent(this, ObdDataCollectionService.class));
-        Intent i= new Intent(this, ObdDataCollectionService.class);
-        startService(i);
-        bindService(i,mConnection, Context.BIND_AUTO_CREATE);
-
-    }
-
-
-    private ServiceConnection mConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName className,
-                                       IBinder service) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
-            mService = ((ObdDataCollectionService.LocalBinder) service).getService();
-
-            mBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Unbind from the service
+        if (mBound) {
+            unbindService(mConnection);
             mBound = false;
         }
-    };
-    */
+    }
+
+    //---------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------------
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
