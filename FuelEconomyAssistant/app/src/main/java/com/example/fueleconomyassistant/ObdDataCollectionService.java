@@ -18,7 +18,7 @@ import pt.lighthouselabs.obd.commands.protocol.TimeoutObdCommand;
 import pt.lighthouselabs.obd.enums.ObdProtocols;
 
 public class ObdDataCollectionService extends Service {
-    IBinder mBinder;      // interface for clients that bind
+    private final IBinder mBinder = new LocalBinder();      // interface for clients that bind
     ArrayList<DataPoint> mRpmHistory;
     ArrayList<DataPoint> mEconomyHistory;
     ArrayList<DataPoint> mSpeedHistory;
@@ -87,6 +87,10 @@ public class ObdDataCollectionService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
+    }
+
+    public void testWithToast(){
+        //Toast.makeText(getApplicationContext(), "binding", Toast.LENGTH_SHORT).show();
     }
 
 }

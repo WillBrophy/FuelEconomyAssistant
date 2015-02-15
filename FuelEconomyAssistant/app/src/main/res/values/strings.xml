@@ -14,5 +14,6 @@
     <string name="stations_format">There are %d gas stations nearby!</string>
     <string name="back">Back</string>
     <string name="fuel_level">Fuel Level</string>
+    <string name="obd_service_name">ObdDataCollection</string>
 
 </resources>

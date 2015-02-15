@@ -1,16 +1,13 @@
 package com.example.fueleconomyassistant;
 
-import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.LineGraphSeries;
-
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.DialogInterface;
-import android.os.Bundle;
-import android.app.Activity;
 import android.content.Intent;
+import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -18,6 +15,9 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -39,6 +39,8 @@ public class MainActivity extends Activity {
 
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothSocket mSocket;
+    ObdDataCollectionService mService;
+    private boolean mBound;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,8 +89,47 @@ public class MainActivity extends Activity {
         }, 1000, 1000);
 
         enableBluetooth();
+
+    }
+    /*
+    @Override
+    public void onStart(){
+        super.onStart();
+        beginObdService();
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        ((ObdDataCollectionService)mService).testWithToast();
     }
 
+    public void beginObdService(){
+        //startService(new Intent(this, ObdDataCollectionService.class));
+        Intent i= new Intent(this, ObdDataCollectionService.class);
+        startService(i);
+        bindService(i,mConnection, Context.BIND_AUTO_CREATE);
+
+    }
+
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            mService = ((ObdDataCollectionService.LocalBinder) service).getService();
+
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
+    */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
