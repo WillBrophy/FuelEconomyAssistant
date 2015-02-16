@@ -1,16 +1,18 @@
 package com.example.fueleconomyassistant;
 
-import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.LineGraphSeries;
-
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
-import android.os.Bundle;
-import android.app.Activity;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -19,10 +21,13 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
+
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Set;
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.UUID;
 
 public class MainActivity extends Activity {
@@ -32,6 +37,8 @@ public class MainActivity extends Activity {
     private Button mMapButton;
     private GraphViewFEA mGraph;
 
+    private ServiceConnection mConnection;
+
     private TextView mEconomy;
     private TextView mSpeed;
     private TextView mEngine;
@@ -39,6 +46,8 @@ public class MainActivity extends Activity {
 
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothSocket mSocket;
+
+    private boolean mBound;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,17 +87,57 @@ public class MainActivity extends Activity {
         });
         mGraph.addSeries(series);
 
-        Timer mUpdateTimer = new Timer();
-        mUpdateTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                updateValues();
-            }
-        }, 1000, 1000);
-
         enableBluetooth();
+
+    }
+    //---------------------------------------------Code To Bind to OBD Service------------------------------
+    //----------------------------------------------------------------------------------------------
+    ObdDataCollectionService mService;
+
+
+    private void startBluetoothService() {
+
+        // Bind to LocalService
+        mConnection = new ServiceConnection() {
+
+            @Override
+            public void onServiceConnected(ComponentName className,
+                                           IBinder service) {
+                // We've bound to LocalService, cast the IBinder and get LocalService instance
+                ObdDataCollectionService.LocalBinder binder = (ObdDataCollectionService.LocalBinder) service;
+                mService = binder.getService();
+                mService.beginPlxCollection(mSocket);
+                updateValues();
+                mBound = true;
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName arg0) {
+                mBound = false;
+            }
+        };
+        Intent intent = new Intent(this, ObdDataCollectionService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        //String s = "" + mService.getConfirmationString();
+        //Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
+        Log.d("s", "Intent Created and Service Bound");
+        if(mBound) {
+            Log.d("s", "mBound = TRUE");
+        }
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Unbind from the service
+        if (mBound) {
+            unbindService(mConnection);
+            mBound = false;
+        }
+    }
+
+    //---------------------------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------------
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -97,12 +146,27 @@ public class MainActivity extends Activity {
     }
 
     private void updateValues() {
-        //Update the economy, speed, engine
+        Log.d("I'm here","I'm here");
+        new Thread(new Runnable() {
+            public void run() {
+                //Let the thread sleep to compensate for graph interval
+                while (true){
+                    try {
+                        Thread.sleep(1000);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
 
+                ArrayList<ObdDataPoint> collectedData = mService.getRpmHistory();
+                long currentDate = new Date().getTime();
+
+                Log.d("ObdCollectedData"+"("+collectedData.size()+")",collectedData.get(collectedData.size()-1).toString());
+            }
+            }
+        }).start();
     }
 
-
-    public void checkBluetooth() {
+    public void chooseBluetoothAdapter() {
         ArrayList deviceStrs = new ArrayList();
         final ArrayList devices = new ArrayList();
 
@@ -115,9 +179,8 @@ public class MainActivity extends Activity {
             }
         }
 
-        // show list
+        // show list of available bluetooth devices
         final AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
-
         ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.select_dialog_singlechoice,
                 deviceStrs.toArray(new String[deviceStrs.size()]));
 
@@ -128,10 +191,7 @@ public class MainActivity extends Activity {
                 int position = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
                 String deviceAddress = (String) devices.get(position);
                 UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-
-
                 BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(deviceAddress);
-
                 try {
 
                     mSocket = device.createInsecureRfcommSocketToServiceRecord(uuid);
@@ -139,6 +199,8 @@ public class MainActivity extends Activity {
 
                     Toast toast = Toast.makeText(getApplicationContext(), "Connection Successful", Toast.LENGTH_LONG);
                     toast.show();
+                    //Begin the OBD data service
+                    startBluetoothService();
 
                 } catch (Exception e) {
                     Toast toast = Toast.makeText(getApplicationContext(), "Connection NOT Successful", Toast.LENGTH_LONG);
@@ -148,13 +210,8 @@ public class MainActivity extends Activity {
 
             }
         });
-
-
-
         alertDialog.setTitle("Choose Bluetooth device");
         alertDialog.show();
-
-
     }
 
     public void enableBluetooth(){
@@ -162,12 +219,28 @@ public class MainActivity extends Activity {
         if (mBluetoothAdapter == null) {
 
         }else{
-            //addToReport("Bluetooth capability confirmed");
-            if (!mBluetoothAdapter.isEnabled()) {
-                //addToReport("Bluetooth adapter disabled, requesting user intervention");
-                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-            }
+            //Bluetooth Capability Confirmed
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(R.string.plx_dialog_message).setTitle(R.string.plx_dialog_title);
+            builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    //User Chose to Enable Bluetooth
+                    if (!mBluetoothAdapter.isEnabled()) {
+                        //addToReport("Bluetooth adapter disabled, requesting user intervention");
+                        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                    }else{
+                        chooseBluetoothAdapter();
+                    }
+                }
+            });
+            builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    // User cancelled the dialog
+                }
+            });
+            AlertDialog dialog = builder.create();
+            dialog.show();
         }
 
 
@@ -181,7 +254,7 @@ public class MainActivity extends Activity {
             if (resultCode != RESULT_OK) {
                 //addToReport("Request to enable bluetooth was denied");
             }else{
-                checkBluetooth();
+                chooseBluetoothAdapter();
                 //addToReport("Bluetooth adapter successfully enabled");
             }
         }

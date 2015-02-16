@@ -10,9 +10,12 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-sdk
         android:minSdkVersion="17"
         android:targetSdkVersion="18" />
+
+
 
     <application
         android:allowBackup="true"
@@ -45,6 +48,6 @@
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyAIaGJgPO2fpBli-G02DOf5dLUhiN94_XI"/>
+        <service android:name=".ObdDataCollectionService"/>
     </application>
-
 </manifest>
