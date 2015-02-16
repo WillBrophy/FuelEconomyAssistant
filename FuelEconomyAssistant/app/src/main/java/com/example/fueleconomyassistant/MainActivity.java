@@ -106,7 +106,7 @@ public class MainActivity extends Activity {
                 // We've bound to LocalService, cast the IBinder and get LocalService instance
                 ObdDataCollectionService.LocalBinder binder = (ObdDataCollectionService.LocalBinder) service;
                 mService = binder.getService();
-                mService.runObdInitialization(mSocket);
+                mService.beginPlxCollection(mSocket);
                 updateValues();
                 mBound = true;
             }

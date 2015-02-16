@@ -7,9 +7,9 @@ import java.util.Date;
  */
 public class ObdDataPoint{
     private Date mTimeCollected;
-    private int mValue;
+    private double mValue;
 
-    public ObdDataPoint(Date timeCollected,int value ){
+    public ObdDataPoint(Date timeCollected,double value ){
         this.mTimeCollected = timeCollected;
         this.mValue = value;
     }
@@ -18,7 +18,7 @@ public class ObdDataPoint{
         return mTimeCollected.getTime();
     }
 
-    public int getValue() {
+    public double getValue() {
         return mValue;
     }
 
