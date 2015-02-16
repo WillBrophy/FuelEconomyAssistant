@@ -6,6 +6,9 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 
+import java.util.ArrayList;
+import java.util.Date;
+
 import pt.lighthouselabs.obd.commands.SpeedObdCommand;
 import pt.lighthouselabs.obd.commands.engine.EngineRPMObdCommand;
 import pt.lighthouselabs.obd.commands.fuel.FuelConsumptionRateObdCommand;
@@ -33,34 +36,26 @@ public class ObdDataCollectionService extends Service {
         return mBinder;
     }
 
-    public void beingCollection(){
-        new Thread(new Runnable() {
-            public void run() {
-                //Let the thread sleep while the car computer prepares new data
-                try{
-                    Thread.sleep(50);
-                }catch(Exception e){
-                    e.printStackTrace();
-                }
-                //Gather the newest data from the vehicle computer
-
-            }
-        }).start();
-    }
-
     public String getConfirmationString() {
         return "Method Call Successfull";
     }
 
     //------------------------------------------------------------------
+    private ArrayList<ObdDataPoint> mRpmHistory;
+    private ArrayList<ObdDataPoint> mSpeedHistory;
+    private ArrayList<ObdDataPoint> mFuelEconomyHistory;
+    private ArrayList<ObdDataPoint> mFuelConsumptionHistory;
+    private ObdDataPoint mFuelLevel;
+
     private BluetoothSocket mSocket;
     private EngineRPMObdCommand mRpmCommand;
     private SpeedObdCommand mSpeedCommand;
     private FuelEconomyObdCommand mFuelEconomyCommand;
     private FuelLevelObdCommand mFuelLevelObdCommand;
     private FuelConsumptionRateObdCommand mFuelConsumptionCommand;
-    public void runObdInitialization(BluetoothSocket incomingSocket){
+    public boolean runObdInitialization(BluetoothSocket incomingSocket){
         mSocket = incomingSocket;
+        mRpmHistory = new ArrayList<ObdDataPoint>();
         try {
             new EchoOffObdCommand().run(mSocket.getInputStream(), mSocket.getOutputStream());
             new LineFeedOffObdCommand().run(mSocket.getInputStream(), mSocket.getOutputStream());
@@ -71,8 +66,47 @@ public class ObdDataCollectionService extends Service {
             mFuelEconomyCommand = new FuelEconomyObdCommand();
             mFuelLevelObdCommand = new FuelLevelObdCommand();
             mFuelConsumptionCommand = new FuelConsumptionRateObdCommand();
+            beginCollection();
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return false;
+    }
+    public void beginCollection(){
+        new Thread(new Runnable() {
+            public void run() {
+                //Let the thread sleep while the car computer prepares new data
+                while(true) {
+                    try {
+                        Thread.sleep(1500);
+                        new EchoOffObdCommand().run(mSocket.getInputStream(), mSocket.getOutputStream());
+                        new LineFeedOffObdCommand().run(mSocket.getInputStream(), mSocket.getOutputStream());
+                        new TimeoutObdCommand(1000).run(mSocket.getInputStream(), mSocket.getOutputStream());
+                        new SelectProtocolObdCommand(ObdProtocols.AUTO).run(mSocket.getInputStream(), mSocket.getOutputStream());
+                        mRpmCommand = new EngineRPMObdCommand();
+                        //mSpeedCommand = new SpeedObdCommand();
+                        //mFuelEconomyCommand = new FuelEconomyObdCommand();
+                        //mFuelLevelObdCommand = new FuelLevelObdCommand();
+                        //mFuelConsumptionCommand = new FuelConsumptionRateObdCommand();
+                    //Gather the newest data from the vehicle computer
+                    mRpmCommand.run(mSocket.getInputStream(), mSocket.getOutputStream());
+                    mRpmHistory.add(new ObdDataPoint(new Date(), mRpmCommand.getRPM()));
+                    //mSpeedCommand.run(mSocket.getInputStream(), mSocket.getOutputStream());
+                    //mSpeedHistory.add(new ObdDataPoint(new Date(), mSpeedCommand.getImperialSpeed()));
+                    //mFuelEconomyCommand.run(mSocket.getInputStream(), mSocket.getOutputStream());
+                    //mFuelEconomyHistory.add(new ObdDataPoint(new Date(), mRpmCommand.getRPM()));
+                    //mFuelConsumptionCommand.run(mSocket.getInputStream(), mSocket.getOutputStream());
+                    //mFuelConsumptionHistory.add(new ObdDataPoint(new Date(), mRpmCommand.getRPM()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
+    }
+
+    public ArrayList<ObdDataPoint> getRpmHistory() {
+        return mRpmHistory;
     }
 }

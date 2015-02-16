@@ -25,9 +25,9 @@ import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Set;
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.UUID;
 
 public class MainActivity extends Activity {
@@ -87,14 +87,6 @@ public class MainActivity extends Activity {
         });
         mGraph.addSeries(series);
 
-        Timer mUpdateTimer = new Timer();
-        mUpdateTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                updateValues();
-            }
-        }, 1000, 1000);
-
         enableBluetooth();
 
     }
@@ -114,6 +106,8 @@ public class MainActivity extends Activity {
                 // We've bound to LocalService, cast the IBinder and get LocalService instance
                 ObdDataCollectionService.LocalBinder binder = (ObdDataCollectionService.LocalBinder) service;
                 mService = binder.getService();
+                mService.runObdInitialization(mSocket);
+                updateValues();
                 mBound = true;
             }
 
@@ -152,11 +146,25 @@ public class MainActivity extends Activity {
     }
 
     private void updateValues() {
-        if(mBound){
+        Log.d("I'm here","I'm here");
+        new Thread(new Runnable() {
+            public void run() {
+                //Let the thread sleep to compensate for graph interval
+                while (true){
+                    try {
+                        Thread.sleep(1000);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
 
-        }
+                ArrayList<ObdDataPoint> collectedData = mService.getRpmHistory();
+                long currentDate = new Date().getTime();
+
+                Log.d("ObdCollectedData"+"("+collectedData.size()+")",collectedData.get(collectedData.size()-1).toString());
+            }
+            }
+        }).start();
     }
-
 
     public void chooseBluetoothAdapter() {
         ArrayList deviceStrs = new ArrayList();
