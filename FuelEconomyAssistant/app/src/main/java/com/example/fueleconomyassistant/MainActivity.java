@@ -25,11 +25,9 @@ import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Set;
 import java.util.Timer;
 import java.util.UUID;
-
 public class MainActivity extends Activity {
 
     private static final int REQUEST_ENABLE_BT = 1;
@@ -48,6 +46,7 @@ public class MainActivity extends Activity {
     private BluetoothSocket mSocket;
 
     private boolean mBound;
+    private boolean runViewUpdate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,16 +96,17 @@ public class MainActivity extends Activity {
 
     private void startBluetoothService() {
 
-        // Bind to LocalService
+        // Bind to Service
         mConnection = new ServiceConnection() {
 
             @Override
             public void onServiceConnected(ComponentName className,
                                            IBinder service) {
-                // We've bound to LocalService, cast the IBinder and get LocalService instance
+                // We've bound to the Service, cast the IBinder and get Service instance
                 ObdDataCollectionService.LocalBinder binder = (ObdDataCollectionService.LocalBinder) service;
                 mService = binder.getService();
                 mService.beginPlxCollection(mSocket);
+                runViewUpdate = true;
                 updateValues();
                 mBound = true;
             }
@@ -121,21 +121,17 @@ public class MainActivity extends Activity {
         //String s = "" + mService.getConfirmationString();
         //Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
         Log.d("s", "Intent Created and Service Bound");
-        if(mBound) {
-            Log.d("s", "mBound = TRUE");
-        }
     }
-
     @Override
     protected void onStop() {
         super.onStop();
         // Unbind from the service
+        runViewUpdate = false;
         if (mBound) {
             unbindService(mConnection);
             mBound = false;
         }
     }
-
     //---------------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------------------
     @Override
@@ -144,23 +140,18 @@ public class MainActivity extends Activity {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
-
     private void updateValues() {
-        Log.d("I'm here","I'm here");
         new Thread(new Runnable() {
             public void run() {
                 //Let the thread sleep to compensate for graph interval
-                while (true){
+                while (runViewUpdate){
                     try {
                         Thread.sleep(1000);
+                        //Update Values Here
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-
-                ArrayList<ObdDataPoint> collectedData = mService.getRpmHistory();
-                long currentDate = new Date().getTime();
-
-                Log.d("ObdCollectedData"+"("+collectedData.size()+")",collectedData.get(collectedData.size()-1).toString());
             }
             }
         }).start();
