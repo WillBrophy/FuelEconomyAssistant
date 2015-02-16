@@ -144,10 +144,20 @@ public class MainActivity extends Activity {
         new Thread(new Runnable() {
             public void run() {
                 //Let the thread sleep to compensate for graph interval
+                ArrayList<ObdDataPoint> currentData;
                 while (runViewUpdate){
                     try {
                         Thread.sleep(1000);
-                        //Update Values Here
+                        //Update Rpm Values Here
+                        currentData = mService.getRpmHistory();
+
+
+                        //Update Fuel Economy Values Here
+                        currentData = mService.
+
+                        //Update Speed Values Here
+
+                        //Update Fuel Consumption Values here
 
                     } catch (Exception e) {
                         e.printStackTrace();

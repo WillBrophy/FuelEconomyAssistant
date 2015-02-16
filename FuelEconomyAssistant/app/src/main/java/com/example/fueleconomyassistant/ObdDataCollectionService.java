@@ -79,10 +79,12 @@ public class ObdDataCollectionService extends Service {
                     mImperialSpeedHistory.add(new ObdDataPoint(new Date(), (double) mSpeedCommand.getImperialSpeed()));
                     mMetricSpeedHistory.add(new ObdDataPoint(new Date(), (double) mSpeedCommand.getMetricSpeed()));
                     mFuelEconomyCommand.run(mSocket.getInputStream(), mSocket.getOutputStream());
-                    mImperialFuelEconomyHistory.add(new ObdDataPoint(new Date(),(double) mFuelEconomyCommand.getMilesPerUSGallon()));
+                    mImperialFuelEconomyHistory.add(new ObdDataPoint(new Date(), (double) mFuelEconomyCommand.getMilesPerUSGallon()));
                     mMetricFuelEconomyHistory.add(new ObdDataPoint(new Date(), (double) mFuelEconomyCommand.getLitersPer100Km()));
                     mFuelConsumptionCommand.run(mSocket.getInputStream(), mSocket.getOutputStream());
                     mMetricFuelConsumptionHistory.add(new ObdDataPoint(new Date(), mFuelConsumptionCommand.getLitersPerHour()));
+                    mFuelLevelObdCommand.run(mSocket.getInputStream(), mSocket.getOutputStream());
+                    mFuelLevel = new ObdDataPoint(new Date(),mFuelLevelObdCommand.getFuelLevel());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -94,4 +96,27 @@ public class ObdDataCollectionService extends Service {
         return mRpmHistory;
     }
 
+    public ArrayList<ObdDataPoint> getImperialSpeedHistory() {
+        return mImperialSpeedHistory;
+    }
+
+    public ArrayList<ObdDataPoint> getMetricSpeedHistory() {
+        return mMetricSpeedHistory;
+    }
+
+    public ArrayList<ObdDataPoint> getImperialFuelEconomyHistory() {
+        return mImperialFuelEconomyHistory;
+    }
+
+    public ArrayList<ObdDataPoint> getMetricFuelEconomyHistory() {
+        return mMetricFuelEconomyHistory;
+    }
+
+    public ArrayList<ObdDataPoint> getMetricFuelConsumptionHistory() {
+        return mMetricFuelConsumptionHistory;
+    }
+
+    public ObdDataPoint getFuelLevel() {
+        return mFuelLevel;
+    }
 }
