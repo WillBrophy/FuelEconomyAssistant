@@ -17,7 +17,7 @@
     </style>
 
 
-    <style name="ModeTheme" parent="android:Theme.Holo.Light">
+    <style name="ModeTheme" parent="android:Theme.Holo">
         <!-- Customize your theme here. -->
     </style>
 

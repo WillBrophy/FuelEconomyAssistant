@@ -32,7 +32,9 @@ import com.google.api.client.json.jackson.JacksonFactory;
 import com.google.gson.Gson;
 //import com.google.android.maps.MapView;
 
+import android.app.UiModeManager;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -43,6 +45,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Context;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -81,6 +84,23 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String colorScheme = prefs.getString("color_scheme_pref", "0");
+        UiModeManager manager = (UiModeManager) getSystemService(Context.UI_MODE_SERVICE);
+        manager.enableCarMode(0);
+        if(colorScheme.equals("1")){
+//            setTheme(android.R.style.Theme_Holo);
+            Log.d("WILL", "night");
+            manager.setNightMode(UiModeManager.MODE_NIGHT_YES);
+        }else if(colorScheme.equals("2")){
+//            setTheme(android.R.style.Theme_Holo_Light);
+            Log.d("WILL", "day");
+            manager.setNightMode(UiModeManager.MODE_NIGHT_NO);
+        }else{
+            Log.d("WILL", "auto");
+            manager.setNightMode(UiModeManager.MODE_NIGHT_AUTO);
+        }
+        setTheme(R.style.ModeTheme);
 		setContentView(R.layout.activity_map);
 		mPlaces = new ArrayList<Place>();
 		mAdapter = new StationsAdapter(this, R.layout.station_item, mPlaces);
@@ -122,7 +142,7 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
             }
         });
 //		MapView mv = (MapView) findViewById(R.id.mapView);
-		
+
 	}
 
 	@Override
@@ -135,7 +155,9 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
     @Override
     protected void onPause() {
         super.onPause();
-        stopLocationUpdates();
+        if((mGoogleApiClient.isConnected() && mRequestingLocationUpdates)){
+            stopLocationUpdates();
+        }
     }
     protected void stopLocationUpdates() {
         LocationServices.FusedLocationApi.removeLocationUpdates(
