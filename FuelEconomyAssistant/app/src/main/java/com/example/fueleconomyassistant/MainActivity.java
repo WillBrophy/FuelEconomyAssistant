@@ -10,8 +10,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -25,6 +27,7 @@ import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Set;
 import java.util.Timer;
 import java.util.UUID;
@@ -148,12 +151,37 @@ public class MainActivity extends Activity {
                 while (runViewUpdate){
                     try {
                         Thread.sleep(1000);
+                        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+                        String colorScheme = prefs.getString("color_scheme_pref", "0");
+                        //preform date calculations
+                        long currentTime = new Date().getTime();
+                        long oldestTime = currentTime - 5*60*1000;
                         //Update Rpm Values Here
                         currentData = mService.getRpmHistory();
+                        final ArrayList<DataPoint> mRpmArray = new ArrayList<DataPoint>();
+                        boolean dateValid = true;
+                        for(ObdDataPoint temp: currentData){
+                            if(temp.getTimeCollected() < oldestTime){
+                                break;
+                            }
+                            //DataPoint currentPoint = new DataPoint((currentTime - temp.getTimeCollected()),temp.getValue());
+                            DataPoint currentPoint = new DataPoint(currentData.indexOf(temp),temp.getValue());
+                            mRpmArray.add(currentPoint);
+                        }
+                        final ArrayList<ObdDataPoint> currentDataFinal = currentData;
+                        final LineGraphSeries<DataPoint> mRpmSeries = new LineGraphSeries<DataPoint>(mRpmArray.toArray(new DataPoint[mRpmArray.size()]));
+                        MainActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mEngine.setText("" + (int)(currentDataFinal.get(currentDataFinal.size()-1).getValue()));
+                                
+                                mGraph.removeAllSeries();
+                                mGraph.addSeries(mRpmSeries);
+                            }
+                        });
 
-
+                        Log.d("updateValues","mGraphUpdated");
                         //Update Fuel Economy Values Here
-                        currentData = mService.
 
                         //Update Speed Values Here
 
@@ -238,6 +266,8 @@ public class MainActivity extends Activity {
             builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     // User cancelled the dialog
+                    startTestService();
+
                 }
             });
             AlertDialog dialog = builder.create();
@@ -259,6 +289,29 @@ public class MainActivity extends Activity {
                 //addToReport("Bluetooth adapter successfully enabled");
             }
         }
+    }
+
+    public void startTestService(){
+        mConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName className,
+                                           IBinder service) {
+                // We've bound to the Service, cast the IBinder and get Service instance
+                ObdDataCollectionService.LocalBinder binder = (ObdDataCollectionService.LocalBinder) service;
+                mService = binder.getService();
+                mService.beginTestModeCollection();
+                runViewUpdate = true;
+                updateValues();
+                mBound = true;
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName arg0) {
+                mBound = false;
+            }
+        };
+        Intent intent = new Intent(this, ObdDataCollectionService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
 }
