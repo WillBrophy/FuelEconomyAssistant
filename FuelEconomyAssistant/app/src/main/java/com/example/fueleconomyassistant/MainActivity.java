@@ -23,10 +23,13 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.jjoe64.graphview.DefaultLabelFormatter;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Set;
 import java.util.Timer;
@@ -47,9 +50,10 @@ public class MainActivity extends Activity {
 
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothSocket mSocket;
-
+    private LineGraphSeries<DataPoint> mRpmSeries;
     private boolean mBound;
     private boolean runViewUpdate;
+    private double oldX = -100;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,8 +91,35 @@ public class MainActivity extends Activity {
                 new DataPoint(3, 2),
                 new DataPoint(4, 6)
         });
-        mGraph.addSeries(series);
-
+        mRpmSeries = new LineGraphSeries<DataPoint>();
+//        mRpmSeries = new LineGraphSeries<DataPoint>(new DataPoint[500]);
+        mGraph.addSeries(mRpmSeries);
+        mGraph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter(){
+            @Override
+            public String formatLabel(double value, boolean isValueX) {
+                if (isValueX) {
+                    // show normal x values
+                    String s = "";
+                    long currentTime = new Date().getTime();
+                    long time = (long) value;
+                    Calendar c = Calendar.getInstance();
+                    c.setTimeInMillis(time);
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+                    Date d = new Date();
+                    d.setTime(c.getTimeInMillis());
+                    Log.d("WILL", "formated to:  " + dateFormat.format(d));
+                    return dateFormat.format(d);
+//                    return super.formatLabel(value, isValueX);
+                } else {
+                    // show currency for y values
+                    return super.formatLabel(value, isValueX);
+                }
+            }
+        });
+        mGraph.getViewport().setXAxisBoundsManual(true);
+//        mGraph.getViewport().setMaxX(new Date().getTime());
+//        mGraph.getViewport().setMinX(new Date().getTime() - 50*60*1000);
+//        mGraph.getViewport().setScrollable(true);
         enableBluetooth();
 
     }
@@ -147,36 +178,59 @@ public class MainActivity extends Activity {
         new Thread(new Runnable() {
             public void run() {
                 //Let the thread sleep to compensate for graph interval
-                ArrayList<ObdDataPoint> currentData;
+                 ArrayList<ObdDataPoint> currentData;
                 while (runViewUpdate){
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(1500);
                         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
                         String colorScheme = prefs.getString("color_scheme_pref", "0");
                         //preform date calculations
-                        long currentTime = new Date().getTime();
+                        final long currentTime = new Date().getTime();
                         long oldestTime = currentTime - 5*60*1000;
                         //Update Rpm Values Here
                         currentData = mService.getRpmHistory();
-                        final ArrayList<DataPoint> mRpmArray = new ArrayList<DataPoint>();
-                        boolean dateValid = true;
-                        for(ObdDataPoint temp: currentData){
-                            if(temp.getTimeCollected() < oldestTime){
-                                break;
-                            }
-                            //DataPoint currentPoint = new DataPoint((currentTime - temp.getTimeCollected()),temp.getValue());
-                            DataPoint currentPoint = new DataPoint(currentData.indexOf(temp),temp.getValue());
-                            mRpmArray.add(currentPoint);
-                        }
+//                        final ArrayList<DataPoint> mRpmArray = new ArrayList<DataPoint>();
+//                        boolean dateValid = true;
+//                        for(ObdDataPoint temp: currentData){
+//                            if(temp.getTimeCollected() < oldestTime){
+//                                break;
+//                            }
+//                            long testTime = currentTime - temp.getTimeCollected();
+//                            Date testDate = new Date();
+//                            testDate.setTime(testTime);
+//                            Log.d("WILL", testDate.toLocaleString());
+//                            Log.d("WILL", "time in seconds = " + testTime/1000.0);
+//                            DataPoint currentPoint = new DataPoint((double) (currentTime - temp.getTimeCollected())/1000., (double) temp.getValue());
+//                            DataPoint currentPoint = new DataPoint(currentData.indexOf(temp),temp.getValue());
+//                            mRpmArray.add(currentPoint);
+//                        }
                         final ArrayList<ObdDataPoint> currentDataFinal = currentData;
-                        final LineGraphSeries<DataPoint> mRpmSeries = new LineGraphSeries<DataPoint>(mRpmArray.toArray(new DataPoint[mRpmArray.size()]));
+//                        final LineGraphSeries<DataPoint> mRpmSeries = new LineGraphSeries<DataPoint>(mRpmArray.toArray(new DataPoint[mRpmArray.size()]));
                         MainActivity.this.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                mEngine.setText("" + (int)(currentDataFinal.get(currentDataFinal.size()-1).getValue()));
+                                if(currentDataFinal.get(currentDataFinal.size()-1).getTimeCollected() < oldX){
+                                    Log.d("WILL", "OUT OF ORDER HERE YAAAAY");
+                                }
+                                if(currentDataFinal.get(currentDataFinal.size()-1).getTimeCollected() > oldX) {
+                                    oldX = currentDataFinal.get(currentDataFinal.size() - 1).getTimeCollected();
+//                                    DataPoint currentPoint = new DataPoint((double) currentDataFinal.get(currentDataFinal.size() - 1).getTimeCollected(), (double) currentDataFinal.get(currentDataFinal.size() - 1).getValue());
+                                    mGraph.getViewport().setXAxisBoundsManual(true);
+//                                    mGraph.getViewport().setMaxX((double) currentDataFinal.get(currentDataFinal.size() - 1).getTimeCollected()+60*1000);
+//                                    mGraph.getViewport().setMinX((double) currentDataFinal.get(currentDataFinal.size() - 1).getTimeCollected() - 60*1000);
+                                    mGraph.getViewport().setMaxX(8.8);
+                                    mGraph.getViewport().setMinX(1.5);
+                                    mGraph.getViewport().setScrollable(true);
+                                    DataPoint currentPoint = new DataPoint((double) currentDataFinal.size(), (double) currentDataFinal.get(currentDataFinal.size() - 1).getValue());
+                                    mRpmSeries.appendData(currentPoint, true, 500);
+                                    mEngine.setText("" + (int) (currentDataFinal.get(currentDataFinal.size() - 1).getValue()));
+//                                    mGraph.onDataChanged(true, false);
+                                }else{
+                                    Log.d("WILL", "MAYBE BECAUSE THEY ARE THE SAME");
+                                }
                                 
-                                mGraph.removeAllSeries();
-                                mGraph.addSeries(mRpmSeries);
+//                                mGraph.removeAllSeries();
+//                                mGraph.addSeries(mRpmSeries);
                             }
                         });
 
