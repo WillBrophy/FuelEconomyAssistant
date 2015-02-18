@@ -1,9 +1,32 @@
 package com.example.fueleconomyassistant;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import android.app.Activity;
+import android.app.Service;
+import android.app.UiModeManager;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.location.Location;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.preference.PreferenceManager;
+import android.util.Log;
+import android.view.Menu;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -18,7 +41,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.maps.MapActivity;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpRequest;
@@ -29,36 +51,13 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.apache.ApacheHttpTransport;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson.JacksonFactory;
-import com.google.gson.Gson;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 //import com.google.android.maps.MapView;
-
-import android.app.UiModeManager;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.location.Location;
-import android.location.LocationListener;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.app.Activity;
-import android.content.Context;
-import android.preference.PreferenceManager;
-import android.util.Log;
-import android.view.Menu;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ListView;
-import android.widget.TextView;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 //import org.apache.http.HttpRequest;
 //import org.apache.http.HttpRequestFactory;
@@ -71,6 +70,7 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
     private static final boolean PRINT_AS_STRING = false;
     private static final String GAS_STATIONS_TYPE = "gas_station";
 
+    private TextView mFuelLevelView;
     private Button mBackButton;
 	private ListView mListView;
 	private ArrayAdapter<Place> mAdapter;
@@ -81,7 +81,12 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
     private boolean mRequestingLocationUpdates = true;
     private LocationRequest mLocationRequest;
     private long mLocUpdInterval = 1000;
-	@Override
+    private ServiceConnection mConnection;
+    ObdDataCollectionService mService;
+    private boolean mBound;
+    private boolean runViewUpdate;
+
+    @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -106,6 +111,7 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
 		mAdapter = new StationsAdapter(this, R.layout.station_item, mPlaces);
 		mListView = (ListView) findViewById(R.id.stations_list);
 		mListView.setAdapter(mAdapter);
+        mFuelLevelView = (TextView) findViewById(R.id.economy_value);
 		
 		mBackButton = (Button) findViewById(R.id.back_button);
 		mBackButton.setOnClickListener(new OnClickListener() {
@@ -135,12 +141,12 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
                 if(intent.resolveActivity(getPackageManager()) !=  null){
                     startActivity(intent);
                 }
-
 //                Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
 //                        Uri.parse("http://maps.google.com/maps?daddr="+  p.geometry.location.lat + "," + p.geometry.location.lng));
 //                startActivity(intent);
             }
         });
+        startTestService();
 //		MapView mv = (MapView) findViewById(R.id.mapView);
 
 	}
@@ -151,6 +157,53 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
 		getMenuInflater().inflate(R.menu.map, menu);
 		return true;
 	}
+
+    public void startTestService() {
+        mConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName className,
+                                           IBinder service) {
+                // We've bound to the Service, cast the IBinder and get Service instance
+                ObdDataCollectionService.LocalBinder binder = (ObdDataCollectionService.LocalBinder) service;
+                mService = binder.getService();
+                mService.beginTestModeCollection();
+                runViewUpdate = true;
+                updateValues();
+                mBound = true;
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName arg0) {
+                mBound = false;
+            }
+        };
+        Intent intent = new Intent(this, ObdDataCollectionService.class);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    public void updateValues(){
+        new Thread(new Runnable() {
+            public void run() {
+                try{
+                    Thread.sleep(10000);
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
+                FuelMapActivity.this.runOnUiThread(new Runnable(){
+                    @Override
+                    public void run() {
+                        ObdDataPoint currentLevel = mService.getFuelLevel();
+                        String s = currentLevel.getValue() + "%";
+                        mFuelLevelView.setText(s);
+                    }
+                });
+            }
+        }).start();
+
+
+    }
+
+
 
     @Override
     protected void onPause() {
@@ -171,10 +224,9 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
             startLocationUpdates();
         }
     }
-
     @Override
     public void onConnected(Bundle connectionHint) {
-        Log.d("WILL" ,"In on connected");
+        Log.d("WILL", "In on connected");
         mLastLocation = (LocationServices.FusedLocationApi.getLastLocation(
                 mGoogleApiClient));
         if (mLastLocation != null) {

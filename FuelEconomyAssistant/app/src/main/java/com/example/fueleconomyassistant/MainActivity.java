@@ -216,16 +216,15 @@ public class MainActivity extends Activity {
             public void run() {
                 //Let the thread sleep to compensate for graph interval
                 ArrayList<ObdDataPoint> currentData;
-                while (runViewUpdate) {
+                do{
                     try {
-                        Thread.sleep(1000);
                         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
                         MainActivity.this.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 final String dataToGraph = prefs.getString("graph_data_pref", "0");
                                 final String units = prefs.getString("units_pref", "0");
-                                //if(!dataToGraph.equals( mPreviousDataGraphed) || !units.equals(mPreviousUnits)) {
+                                if(!dataToGraph.equals( mPreviousDataGraphed) || !units.equals(mPreviousUnits)) {
                                 mGraph.removeAllSeries();
                                 boolean isMetric = units.equals("0");
                                 mSpeedTitle.setText(getString(R.string.speed, (isMetric ? "km/h" : "mph")));
@@ -271,7 +270,7 @@ public class MainActivity extends Activity {
                                     }
                                 });
 
-                                //}
+                                }
                                 mPreviousDataGraphed = dataToGraph;
                                 mPreviousUnits = units;
 
@@ -328,10 +327,11 @@ public class MainActivity extends Activity {
                         //Update Fuel Economy Values Here
                         //Update Speed Values Here
                         //Update Fuel Consumption Values here
+                        Thread.sleep(1500);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                }
+                }while(runViewUpdate);
             }
         }).start();
     }

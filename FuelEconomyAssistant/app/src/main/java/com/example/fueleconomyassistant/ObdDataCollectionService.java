@@ -61,10 +61,15 @@ public class ObdDataCollectionService extends Service {
     public void beginTestModeCollection(){
         mCollectionStartTime = new Date().getTime();
         mRpmHistory = new ArrayList<ObdDataPoint>();
+        mRpmHistory.add(new ObdDataPoint(new Date(), 0));
         mMetricFuelEconomyHistory = new ArrayList<ObdDataPoint>();
+        mMetricFuelEconomyHistory.add(new ObdDataPoint(new Date(), 0));
         mImperialFuelEconomyHistory = new ArrayList<ObdDataPoint>();
+        mImperialFuelEconomyHistory.add(new ObdDataPoint(new Date(), 0));
         mMetricSpeedHistory = new ArrayList<ObdDataPoint>();
+        mMetricSpeedHistory.add(new ObdDataPoint(new Date(), 0));
         mImperialSpeedHistory = new ArrayList<ObdDataPoint>();
+        mImperialSpeedHistory.add(new ObdDataPoint(new Date(), 0));
         final Random generator = new Random();
         new Thread(new Runnable() {
             @Override
