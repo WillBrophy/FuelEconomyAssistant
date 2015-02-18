@@ -44,6 +44,10 @@ public class MainActivity extends Activity {
     private TextView mEconomy;
     private TextView mSpeed;
     private TextView mEngine;
+    private TextView mGraphTitle;
+    private TextView mEconomyTitle;
+    private TextView mSpeedTitle;
+    private TextView mRpmTitle;
     private Timer mUpdateTimer;
 
     private BluetoothAdapter mBluetoothAdapter;
@@ -52,6 +56,12 @@ public class MainActivity extends Activity {
     private boolean mBound;
     private boolean runViewUpdate;
     private double oldX = -100;
+    private String mPreviousDataGraphed;
+    private LineGraphSeries<DataPoint> mMetricFuelEconomySeries;
+    private LineGraphSeries<DataPoint> mImperialFuelEconomySeries;
+    private LineGraphSeries<DataPoint> mImperialSpeedSeries;
+    private LineGraphSeries<DataPoint> mMetricSpeedSeries;
+    private String mPreviousUnits;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +73,10 @@ public class MainActivity extends Activity {
         mEconomy = (TextView) findViewById(R.id.economy_value);
         mSpeed = (TextView) findViewById(R.id.speed_value);
         mEngine = (TextView) findViewById(R.id.engine_value);
-
+        mGraphTitle = (TextView) findViewById(R.id.graph_title);
+        mEconomyTitle = (TextView) findViewById(R.id.economy_title);
+        mRpmTitle = (TextView) findViewById(R.id.engine_title);
+        mSpeedTitle = (TextView) findViewById(R.id.speed_title);
         mSettingsButton.setOnClickListener(new OnClickListener() {
 
             @Override
@@ -91,34 +104,23 @@ public class MainActivity extends Activity {
                 new DataPoint(4, 6)
         });
         */
+        mPreviousDataGraphed = "-1";
+        mPreviousUnits = "-1";
         mRpmSeries = new LineGraphSeries<DataPoint>();
+        mMetricFuelEconomySeries = new LineGraphSeries<DataPoint>();
+        mImperialFuelEconomySeries = new LineGraphSeries<DataPoint>();
+        mImperialSpeedSeries = new LineGraphSeries<DataPoint>();
+        mMetricSpeedSeries = new LineGraphSeries<DataPoint>();
 //        mRpmSeries = new LineGraphSeries<DataPoint>(new DataPoint[500]);
-        mGraph.addSeries(mRpmSeries);
+        //mGraph.addSeries(mRpmSeries);
         mGraph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter(){
             @Override
             public String formatLabel(double value, boolean isValueX) {
                 if (isValueX) {
-                    // show normal x values
-                    /*
-                    String s = "";
-                    long currentTime = new Date().getTime();
-                    long time = (long) value;
-                    Calendar c = Calendar.getInstance();
-                    c.setTimeInMillis(time);
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("ss");
-                    Date d = new Date();
-                    d.setTime(c.getTimeInMillis());
-                    Log.d("WILL", "formated to:  " + dateFormat.format(d));
-
-                    return dateFormat.format(d);
-                    */
-                    //String s = ((int) ((new Date().getTime())-value)/1000) +"";
-                    //Log.d("WINFIELD","formatLabel returned:"+s);
-                    //return s;
                     return super.formatLabel((int) value, isValueX);
                 } else {
                     // show currency for y values
-                    return super.formatLabel(value/1000, isValueX);
+                    return super.formatLabel(value, isValueX);
                 }
             }
         });
@@ -193,49 +195,130 @@ public class MainActivity extends Activity {
                  ArrayList<ObdDataPoint> currentData;
                 while (runViewUpdate){
                     try {
-                        Thread.sleep(250);
+                        Thread.sleep(1000);
                         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-                        String colorScheme = prefs.getString("color_scheme_pref", "0");
-                        //preform date calculations
+
+                        final String dataToGraph = prefs.getString("graph_data_pref", "0");
+                        final String units = prefs.getString("units_pref", "0");
+                        //if(!dataToGraph.equals( mPreviousDataGraphed) || !units.equals(mPreviousUnits)) {
+                            mGraph.removeAllSeries();
+                            if(units.equals("0")){
+                                mSpeedTitle.setText("Speed(km/h)");
+                                mEconomyTitle.setText("Economy(L/100km)");
+                            }else{
+                                mSpeedTitle.setText("Speed(mph)");
+                                mEconomyTitle.setText("Economy(mpg)");
+                            }
+                            if (dataToGraph.equals("0")) {
+                                mGraph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter(){
+                                    @Override
+                                    public String formatLabel(double value, boolean isValueX) {
+                                        if (isValueX) {
+                                            return super.formatLabel((int) value, isValueX);
+                                        } else {
+                                            // show currency for y values
+                                            return super.formatLabel(value, isValueX);
+                                        }
+                                    }
+                                });
+                                if(units.equals("0")) {
+                                    mGraphTitle.setText("Economy(L/100Km)");
+                                    mGraph.addSeries(mMetricFuelEconomySeries);
+                                }else{
+                                    mGraphTitle.setText("Economy(mpg)");
+                                    mGraph.addSeries(mImperialFuelEconomySeries);
+                                }
+                            } else if (dataToGraph.equals("1")) {
+                                mGraph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter(){
+                                    @Override
+                                    public String formatLabel(double value, boolean isValueX) {
+                                        if (isValueX) {
+                                            return super.formatLabel((int) value, isValueX);
+                                        } else {
+                                            // show currency for y values
+                                            return super.formatLabel(value, isValueX);
+                                        }
+                                    }
+                                });
+                                    if(units.equals("0")){
+                                        mGraphTitle.setText("Speed(km/h)");
+                                        mGraph.addSeries(mMetricSpeedSeries);
+                                    }else{
+                                        mGraphTitle.setText("Speed(mph)");
+                                        mGraph.addSeries(mImperialSpeedSeries);
+                                    }
+                            } else if (dataToGraph.equals("2")) {
+                                mGraph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter(){
+                                    @Override
+                                    public String formatLabel(double value, boolean isValueX) {
+                                        if (isValueX) {
+                                            return super.formatLabel((int) value, isValueX);
+                                        } else {
+                                            // show currency for y values
+                                            return super.formatLabel(value/1000, isValueX);
+                                        }
+                                    }
+                                });
+                                mGraphTitle.setText("RPM x1000");
+                                mGraph.addSeries(mRpmSeries);
+                            }
+                        //}
+                        mPreviousDataGraphed = dataToGraph;
+                        mPreviousUnits = units;
+
+                    //clear graph if the graphed data has changed
+                        Log.d("WINFIELD","Data to graph: " + dataToGraph);
+                    //preform date calculations
                         final long currentTime = new Date().getTime();
                         long oldestTime = currentTime - 5*60*1000;
-
-                        //Update Rpm Values Here
+                    //Update Rpm Values Here
                         currentData = mService.getRpmHistory();
                         final ArrayList<ObdDataPoint> currentDataFinal = currentData;
-//                        final LineGraphSeries<DataPoint> mRpmSeries = new LineGraphSeries<DataPoint>(mRpmArray.toArray(new DataPoint[mRpmArray.size()]));
+                        //mEngine.setText("" + (int) (currentDataFinal.get(currentDataFinal.size() - 1).getValue()));
                         MainActivity.this.runOnUiThread(new Runnable() {
                             @Override
-                            public void run() {
-                                if(currentDataFinal.get(currentDataFinal.size()-1).getTimeCollected() > oldX) {
-                                    oldX = currentDataFinal.get(currentDataFinal.size() - 1).getTimeCollected();
-//                                    DataPoint currentPoint = new DataPoint((double) currentDataFinal.get(currentDataFinal.size() - 1).getTimeCollected(), (double) currentDataFinal.get(currentDataFinal.size() - 1).getValue());
-                                    mGraph.getViewport().setXAxisBoundsManual(true);
-//                                    mGraph.getViewport().setMaxX((double) currentDataFinal.get(currentDataFinal.size() - 1).getTimeCollected()+60*1000);
-//                                    mGraph.getViewport().setMinX((double) currentDataFinal.get(currentDataFinal.size() - 1).getTimeCollected() - 60*1000);
-                                    mGraph.getViewport().setMaxX((new Date().getTime() - mService.getCollectionStartTime())/1000);
-                                    mGraph.getViewport().setMinX(((new Date().getTime() - mService.getCollectionStartTime())/1000) - 15);
-                                    mGraph.getViewport().setScrollable(true);
-                                    DataPoint currentPoint = new DataPoint((double) (currentDataFinal.get(currentDataFinal.size() - 1).getTimeCollected() - mService.getCollectionStartTime())/1000, (double) currentDataFinal.get(currentDataFinal.size() - 1).getValue());
-                                    mRpmSeries.appendData(currentPoint, true, 500);
-                                    mEngine.setText("" + (int) (currentDataFinal.get(currentDataFinal.size() - 1).getValue()));
-//                                    mGraph.onDataChanged(true, false);
-                                }else{
-                                    Log.d("WILL", "MAYBE BECAUSE THEY ARE THE SAME");
-                                }
-                                
-//                                mGraph.removeAllSeries();
-//                                mGraph.addSeries(mRpmSeries);
-                            }
-                        });
+                            public void run(){
+                                //set graph bounds
+                                mGraph.getViewport().setXAxisBoundsManual(true);
+                                mGraph.getViewport().setMaxX((new Date().getTime() - mService.getCollectionStartTime()) / 1000);
+                                mGraph.getViewport().setMinX(((new Date().getTime() - mService.getCollectionStartTime()) / 1000) - 15);
+                                mGraph.getViewport().setScrollable(true);
 
+                                    //RPM Code
+                                    mEngine.setText("" + (int) (currentDataFinal.get(currentDataFinal.size() - 1).getValue()));
+                                //if(dataToGraph == "2") {
+                                    final DataPoint currentRpmPoint = new DataPoint((double) (currentDataFinal.get(currentDataFinal.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, (double) currentDataFinal.get(currentDataFinal.size() - 1).getValue());
+                                    mRpmSeries.appendData(currentRpmPoint, true, 500);
+                                //}
+                                    //Metric Fuel Economy Code
+                                    ArrayList<ObdDataPoint> metricFuelData = mService.getMetricFuelEconomyHistory();
+                                    mEconomy.setText("" + (int) (metricFuelData.get(metricFuelData.size() - 1).getValue()));
+                                    final DataPoint currentMetFuelPoint = new DataPoint((double) (metricFuelData.get(metricFuelData.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, (double) metricFuelData.get(metricFuelData.size() - 1).getValue());
+                                    mMetricFuelEconomySeries.appendData(currentMetFuelPoint, true, 500);
+                                //}
+                                    //Imperial Fuel Economy Code
+                                    ArrayList<ObdDataPoint> imperialFuelData = mService.getImperialFuelEconomyHistory();
+                                    mEconomy.setText("" + (int) (imperialFuelData.get(imperialFuelData.size() - 1).getValue()));
+                                    final DataPoint currentImpFuelPoint = new DataPoint((double) (imperialFuelData.get(imperialFuelData.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, (double) imperialFuelData.get(imperialFuelData.size() - 1).getValue());
+                                    mImperialFuelEconomySeries.appendData(currentImpFuelPoint, true, 500);
+                                //
+                                    //Imperial Speed code
+                                ArrayList<ObdDataPoint> imperialSpeedData = mService.getImperialSpeedHistory();
+                                mEconomy.setText("" + (int) (imperialSpeedData.get(imperialSpeedData.size() - 1).getValue()));
+                                final DataPoint currentImpSpeedPoint = new DataPoint((double) (imperialSpeedData.get(imperialSpeedData.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, (double) imperialSpeedData.get(imperialSpeedData.size() - 1).getValue());
+                                mImperialSpeedSeries.appendData(currentImpSpeedPoint, true, 500);
+
+                                    //Metric Speed Code
+                                ArrayList<ObdDataPoint> metricSpeedData = mService.getMetricSpeedHistory();
+                                mEconomy.setText("" + (int) (metricSpeedData.get(metricSpeedData.size() - 1).getValue()));
+                                final DataPoint currentMetSpeedPoint = new DataPoint((double) (metricSpeedData.get(metricSpeedData.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, (double) metricSpeedData.get(metricSpeedData.size() - 1).getValue());
+                                mMetricSpeedSeries.appendData(currentMetSpeedPoint, true, 500);
+                                }
+                        });
                         Log.d("WINFIELD","mGraphUpdated");
                         //Update Fuel Economy Values Here
-
                         //Update Speed Values Here
-
                         //Update Fuel Consumption Values here
-
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

@@ -25,6 +25,8 @@ import pt.lighthouselabs.obd.enums.ObdProtocols;
 public class ObdDataCollectionService extends Service {
     //--------------------------------------------------------------------
     private final IBinder mBinder = new LocalBinder();
+
+
     public class LocalBinder extends Binder {
         ObdDataCollectionService getService() {
             // Return this instance of LocalService so clients can call public methods
@@ -59,6 +61,10 @@ public class ObdDataCollectionService extends Service {
     public void beginTestModeCollection(){
         mCollectionStartTime = new Date().getTime();
         mRpmHistory = new ArrayList<ObdDataPoint>();
+        mMetricFuelEconomyHistory = new ArrayList<ObdDataPoint>();
+        mImperialFuelEconomyHistory = new ArrayList<ObdDataPoint>();
+        mMetricSpeedHistory = new ArrayList<ObdDataPoint>();
+        mImperialSpeedHistory = new ArrayList<ObdDataPoint>();
         final Random generator = new Random();
         new Thread(new Runnable() {
             @Override
@@ -72,7 +78,6 @@ public class ObdDataCollectionService extends Service {
                         mMetricSpeedHistory.add(new ObdDataPoint(new Date(), generator.nextDouble()*100*(5/3)));
                         mImperialSpeedHistory.add(new ObdDataPoint(new Date(), generator.nextDouble()*100));
                         mFuelLevel = new ObdDataPoint(new Date(), generator.nextDouble());
-
                         Log.d("WINFIELD", "Added new test points");
                     }catch(Exception e){
 

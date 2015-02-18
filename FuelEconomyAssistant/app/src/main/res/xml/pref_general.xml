@@ -3,7 +3,7 @@
     <!-- NOTE: EditTextPreference accepts EditText attributes. -->
     <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->
     <EditTextPreference
-        android:defaultValue="@string/default_economy_goal"
+        android:defaultValue="39"
         android:inputType="number"
         android:key="economy_goal_pref"
         android:maxLines="1"
@@ -11,7 +11,7 @@
         android:singleLine="true"
         android:title="@string/economy_goal_title" />
     <EditTextPreference
-        android:defaultValue="@string/default_economy_goal"
+        android:defaultValue="39"
         android:inputType="number"
         android:key="epa_city_pref"
         android:maxLines="1"
@@ -19,7 +19,7 @@
         android:singleLine="true"
         android:title="@string/epa_city_title" />
     <EditTextPreference
-        android:defaultValue="@string/default_economy_goal"
+        android:defaultValue="39"
         android:inputType="number"
         android:key="epa_highway_pref"
         android:maxLines="1"
