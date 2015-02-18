@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.Set;
 import java.util.Timer;
 import java.util.UUID;
+
 public class MainActivity extends Activity {
 
     private static final int REQUEST_ENABLE_BT = 1;
@@ -112,7 +113,7 @@ public class MainActivity extends Activity {
         mMetricSpeedSeries = new LineGraphSeries<DataPoint>();
 //        mRpmSeries = new LineGraphSeries<DataPoint>(new DataPoint[500]);
         //mGraph.addSeries(mRpmSeries);
-        mGraph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter(){
+        mGraph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
             @Override
             public String formatLabel(double value, boolean isValueX) {
                 if (isValueX) {
@@ -130,6 +131,7 @@ public class MainActivity extends Activity {
         enableBluetooth();
 
     }
+
     //---------------------------------------------Code To Bind to OBD Service------------------------------
     //----------------------------------------------------------------------------------------------
     ObdDataCollectionService mService;
@@ -163,6 +165,7 @@ public class MainActivity extends Activity {
         //Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
        // Log.d("s", "Intent Created and Service Bound");
     }
+
     @Override
     protected void onStop() {
         super.onStop();
@@ -173,6 +176,7 @@ public class MainActivity extends Activity {
             mBound = false;
         }
     }
+
     //---------------------------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------------------------
     @Override
@@ -181,23 +185,33 @@ public class MainActivity extends Activity {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
+
     private void updateValues() {
+<<<<<<< HEAD
        // Log.d("WINFIELD","UPDATEVALUES CALLED");
         if(runViewUpdate){
             //Log.d("WINFIELD","runViewUpdate TRUE");
         }else{
             //Log.d("WINFIELD","runViewUpdate FALSE");
+=======
+        Log.d("WINFIELD", "UPDATEVALUES CALLED");
+        if (runViewUpdate) {
+            Log.d("WINFIELD", "runViewUpdate TRUE");
+        } else {
+            Log.d("WINFIELD", "runViewUpdate FALSE");
+>>>>>>> 4abbff989e4391ea007c091ec3f76cb95627e23f
         }
-       new Thread(new Runnable() {
+        new Thread(new Runnable() {
             public void run() {
                 //Let the thread sleep to compensate for graph interval
-                 ArrayList<ObdDataPoint> currentData;
-                while (runViewUpdate){
+                ArrayList<ObdDataPoint> currentData;
+                while (runViewUpdate) {
                     try {
                         Thread.sleep(1000);
                         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
                         MainActivity.this.runOnUiThread(new Runnable() {
                             @Override
+<<<<<<< HEAD
                             public void run(){
                         final String dataToGraph = prefs.getString("graph_data_pref", "0");
                         final String units = prefs.getString("units_pref", "0");
@@ -220,46 +234,57 @@ public class MainActivity extends Activity {
                                             // show currency for y values
                                             return super.formatLabel(value, isValueX);
                                         }
+=======
+                            public void run() {
+                                final String dataToGraph = prefs.getString("graph_data_pref", "0");
+                                final String units = prefs.getString("units_pref", "0");
+                                //if(!dataToGraph.equals( mPreviousDataGraphed) || !units.equals(mPreviousUnits)) {
+                                mGraph.removeAllSeries();
+                                boolean isMetric = units.equals("0");
+                                mSpeedTitle.setText(getString(R.string.speed, (isMetric ? "km/h" : "mph")));
+                                mEconomyTitle.setText(getString(R.string.economy, (isMetric ? "L/100km" : "mpg")));
+                                double divider = 1.0;
+                                if (dataToGraph.equals("0")) {
+                                    divider = 1.0;
+                                    mGraphTitle.setText(getString(R.string.economy, (isMetric ? "L/100km" : "mpg")));
+                                    if (units.equals("0")) {
+//                                        mGraphTitle.setText("Economy(L/100Km)");
+                                        mGraph.addSeries(mMetricFuelEconomySeries);
+                                    } else {
+//                                        mGraphTitle.setText("Economy(mpg)");
+                                        mGraph.addSeries(mImperialFuelEconomySeries);
+>>>>>>> 4abbff989e4391ea007c091ec3f76cb95627e23f
                                     }
-                                });
-                                if(units.equals("0")) {
-                                    mGraphTitle.setText("Economy(L/100Km)");
-                                    mGraph.addSeries(mMetricFuelEconomySeries);
-                                }else{
-                                    mGraphTitle.setText("Economy(mpg)");
-                                    mGraph.addSeries(mImperialFuelEconomySeries);
-                                }
-                            } else if (dataToGraph.equals("1")) {
-                                mGraph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter(){
-                                    @Override
-                                    public String formatLabel(double value, boolean isValueX) {
-                                        if (isValueX) {
-                                            return super.formatLabel((int) value, isValueX);
-                                        } else {
-                                            // show currency for y values
-                                            return super.formatLabel(value, isValueX);
-                                        }
-                                    }
-                                });
-                                    if(units.equals("0")){
-                                        mGraphTitle.setText("Speed(km/h)");
+                                } else if (dataToGraph.equals("1")) {
+                                    divider = 1.0;
+                                    mGraphTitle.setText(getString(R.string.speed, (isMetric ? "km/h" : "mph")));
+                                    if (units.equals("0")) {
+//                                        mGraphTitle.setText("Speed(km/h)");
                                         mGraph.addSeries(mMetricSpeedSeries);
-                                    }else{
-                                        mGraphTitle.setText("Speed(mph)");
+                                    } else {
+//                                        mGraphTitle.setText("Speed(mph)");
                                         mGraph.addSeries(mImperialSpeedSeries);
                                     }
-                            } else if (dataToGraph.equals("2")) {
-                                mGraph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter(){
+                                } else if (dataToGraph.equals("2")) {
+                                    divider = 1000.0;
+
+                                    mGraphTitle.setText("RPM x1000");
+                                    mGraph.addSeries(mRpmSeries);
+                                }
+
+                                final double dataFormatDivider = divider;
+                                mGraph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
                                     @Override
                                     public String formatLabel(double value, boolean isValueX) {
                                         if (isValueX) {
                                             return super.formatLabel((int) value, isValueX);
                                         } else {
                                             // show currency for y values
-                                            return super.formatLabel(value/1000, isValueX);
+                                            return super.formatLabel(value / dataFormatDivider, isValueX);
                                         }
                                     }
                                 });
+<<<<<<< HEAD
                                 mGraphTitle.setText("RPM x1000");
                                 mGraph.addSeries(mRpmSeries);
                             }
@@ -273,9 +298,22 @@ public class MainActivity extends Activity {
                         final long currentTime = new Date().getTime();
                         long oldestTime = currentTime - 5*60*1000;
                     //Update Rpm Values Here
+=======
+
+                                //}
+                                mPreviousDataGraphed = dataToGraph;
+                                mPreviousUnits = units;
+
+                                //clear graph if the graphed data has changed
+                                Log.d("WINFIELD", "Data to graph: " + dataToGraph);
+                                //preform date calculations
+                                final long currentTime = new Date().getTime();
+                                long oldestTime = currentTime - 5 * 60 * 1000;
+                                //Update Rpm Values Here
+>>>>>>> 4abbff989e4391ea007c091ec3f76cb95627e23f
 
 
-                        //mEngine.setText("" + (int) (currentDataFinal.get(currentDataFinal.size() - 1).getValue()));
+                                //mEngine.setText("" + (int) (currentDataFinal.get(currentDataFinal.size() - 1).getValue()));
 
                                 //set graph bounds
                                 mGraph.getViewport().setXAxisBoundsManual(true);
@@ -283,54 +321,58 @@ public class MainActivity extends Activity {
                                 mGraph.getViewport().setMinX(((new Date().getTime() - mService.getCollectionStartTime()) / 1000) - 15);
                                 mGraph.getViewport().setScrollable(true);
 
-                                    //RPM Code
+                                //RPM Code
                                 ArrayList<ObdDataPoint> rpmData = mService.getRpmHistory();
                                 mEconomy.setText("" + (int) (rpmData.get(rpmData.size() - 1).getValue()));
-                                    mEngine.setText("" + (int) (rpmData.get(rpmData.size() - 1).getValue()));
+                                mEngine.setText("" + (int) (rpmData.get(rpmData.size() - 1).getValue()));
                                 //if(dataToGraph == "2") {
-                                    final DataPoint currentRpmPoint = new DataPoint((double) (rpmData.get(rpmData.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, (double) rpmData.get(rpmData.size() - 1).getValue());
-                                    mRpmSeries.appendData(currentRpmPoint, true, 500);
+                                final DataPoint currentRpmPoint = new DataPoint((double) (rpmData.get(rpmData.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, (double) rpmData.get(rpmData.size() - 1).getValue());
+                                mRpmSeries.appendData(currentRpmPoint, true, 500);
                                 //}
-                                    //Metric Fuel Economy Code
-                                    ArrayList<ObdDataPoint> metricFuelData = mService.getMetricFuelEconomyHistory();
-                                    mEconomy.setText("" + (int) (metricFuelData.get(metricFuelData.size() - 1).getValue()));
-                                    final DataPoint currentMetFuelPoint = new DataPoint((double) (metricFuelData.get(metricFuelData.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, (double) metricFuelData.get(metricFuelData.size() - 1).getValue());
-                                    mMetricFuelEconomySeries.appendData(currentMetFuelPoint, true, 500);
+                                //Metric Fuel Economy Code
+                                ArrayList<ObdDataPoint> metricFuelData = mService.getMetricFuelEconomyHistory();
+                                mEconomy.setText("" + (int) (metricFuelData.get(metricFuelData.size() - 1).getValue()));
+                                final DataPoint currentMetFuelPoint = new DataPoint((double) (metricFuelData.get(metricFuelData.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, (double) metricFuelData.get(metricFuelData.size() - 1).getValue());
+                                mMetricFuelEconomySeries.appendData(currentMetFuelPoint, true, 500);
                                 //}
-                                    //Imperial Fuel Economy Code
-                                    ArrayList<ObdDataPoint> imperialFuelData = mService.getImperialFuelEconomyHistory();
-                                    mEconomy.setText("" + (int) (imperialFuelData.get(imperialFuelData.size() - 1).getValue()));
-                                    final DataPoint currentImpFuelPoint = new DataPoint((double) (imperialFuelData.get(imperialFuelData.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, (double) imperialFuelData.get(imperialFuelData.size() - 1).getValue());
-                                    mImperialFuelEconomySeries.appendData(currentImpFuelPoint, true, 500);
+                                //Imperial Fuel Economy Code
+                                ArrayList<ObdDataPoint> imperialFuelData = mService.getImperialFuelEconomyHistory();
+                                mEconomy.setText("" + (int) (imperialFuelData.get(imperialFuelData.size() - 1).getValue()));
+                                final DataPoint currentImpFuelPoint = new DataPoint((double) (imperialFuelData.get(imperialFuelData.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, (double) imperialFuelData.get(imperialFuelData.size() - 1).getValue());
+                                mImperialFuelEconomySeries.appendData(currentImpFuelPoint, true, 500);
                                 //
-                                    //Imperial Speed code
+                                //Imperial Speed code
                                 ArrayList<ObdDataPoint> imperialSpeedData = mService.getImperialSpeedHistory();
                                 mEconomy.setText("" + (int) (imperialSpeedData.get(imperialSpeedData.size() - 1).getValue()));
                                 final DataPoint currentImpSpeedPoint = new DataPoint((double) (imperialSpeedData.get(imperialSpeedData.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, (double) imperialSpeedData.get(imperialSpeedData.size() - 1).getValue());
                                 mImperialSpeedSeries.appendData(currentImpSpeedPoint, true, 500);
 
-                                    //Metric Speed Code
+                                //Metric Speed Code
                                 ArrayList<ObdDataPoint> metricSpeedData = mService.getMetricSpeedHistory();
                                 mEconomy.setText("" + (int) (metricSpeedData.get(metricSpeedData.size() - 1).getValue()));
                                 final DataPoint currentMetSpeedPoint = new DataPoint((double) (metricSpeedData.get(metricSpeedData.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, (double) metricSpeedData.get(metricSpeedData.size() - 1).getValue());
                                 mMetricSpeedSeries.appendData(currentMetSpeedPoint, true, 500);
-                                }
+                            }
                         });
+<<<<<<< HEAD
                         //Log.d("WINFIELD","mGraphUpdated");
+=======
+                        Log.d("WINFIELD", "mGraphUpdated");
+>>>>>>> 4abbff989e4391ea007c091ec3f76cb95627e23f
                         //Update Fuel Economy Values Here
                         //Update Speed Values Here
                         //Update Fuel Consumption Values here
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-            }
+                }
             }
         }).start();
     }
 
     //restart gui updater on resume
     @Override
-    public void onRestart(){
+    public void onRestart() {
         super.onRestart();
         mEngine.setText("--");
         runViewUpdate = true;
@@ -349,7 +391,6 @@ public class MainActivity extends Activity {
                 devices.add(device.getAddress());
             }
         }
-
 
 
         // show list of available bluetooth devices
@@ -387,11 +428,11 @@ public class MainActivity extends Activity {
         alertDialog.show();
     }
 
-    public void enableBluetooth(){
+    public void enableBluetooth() {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null) {
 
-        }else{
+        } else {
             //Bluetooth Capability Confirmed
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage(R.string.plx_dialog_message).setTitle(R.string.plx_dialog_title);
@@ -402,7 +443,7 @@ public class MainActivity extends Activity {
                         //addToReport("Bluetooth adapter disabled, requesting user intervention");
                         Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                         startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-                    }else{
+                    } else {
                         chooseBluetoothAdapter();
                     }
                 }
@@ -420,6 +461,7 @@ public class MainActivity extends Activity {
 
 
     }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // Check which request we're responding to
@@ -427,13 +469,14 @@ public class MainActivity extends Activity {
             // Make sure the request was successful
             if (resultCode != RESULT_OK) {
                 //addToReport("Request to enable bluetooth was denied");
-            }else{
+            } else {
                 chooseBluetoothAdapter();
                 //addToReport("Bluetooth adapter successfully enabled");
             }
         }
     }
-    public void startTestService(){
+
+    public void startTestService() {
         mConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName className,
