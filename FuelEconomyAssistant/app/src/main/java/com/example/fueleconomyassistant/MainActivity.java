@@ -14,7 +14,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -162,7 +161,7 @@ public class MainActivity extends Activity {
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
         //String s = "" + mService.getConfirmationString();
         //Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
-        Log.d("s", "Intent Created and Service Bound");
+       // Log.d("s", "Intent Created and Service Bound");
     }
     @Override
     protected void onStop() {
@@ -183,11 +182,11 @@ public class MainActivity extends Activity {
         return true;
     }
     private void updateValues() {
-        Log.d("WINFIELD","UPDATEVALUES CALLED");
+       // Log.d("WINFIELD","UPDATEVALUES CALLED");
         if(runViewUpdate){
-            Log.d("WINFIELD","runViewUpdate TRUE");
+            //Log.d("WINFIELD","runViewUpdate TRUE");
         }else{
-            Log.d("WINFIELD","runViewUpdate FALSE");
+            //Log.d("WINFIELD","runViewUpdate FALSE");
         }
        new Thread(new Runnable() {
             public void run() {
@@ -202,7 +201,7 @@ public class MainActivity extends Activity {
                             public void run(){
                         final String dataToGraph = prefs.getString("graph_data_pref", "0");
                         final String units = prefs.getString("units_pref", "0");
-                        //if(!dataToGraph.equals( mPreviousDataGraphed) || !units.equals(mPreviousUnits)) {
+                        if(!dataToGraph.equals( mPreviousDataGraphed) || !units.equals(mPreviousUnits)) {
                             mGraph.removeAllSeries();
                             if(units.equals("0")){
                                 mSpeedTitle.setText("Speed(km/h)");
@@ -264,12 +263,12 @@ public class MainActivity extends Activity {
                                 mGraphTitle.setText("RPM x1000");
                                 mGraph.addSeries(mRpmSeries);
                             }
-                        //}
+                        }
                         mPreviousDataGraphed = dataToGraph;
                         mPreviousUnits = units;
 
                     //clear graph if the graphed data has changed
-                        Log.d("WINFIELD","Data to graph: " + dataToGraph);
+                        //Log.d("WINFIELD","Data to graph: " + dataToGraph);
                     //preform date calculations
                         final long currentTime = new Date().getTime();
                         long oldestTime = currentTime - 5*60*1000;
@@ -317,7 +316,7 @@ public class MainActivity extends Activity {
                                 mMetricSpeedSeries.appendData(currentMetSpeedPoint, true, 500);
                                 }
                         });
-                        Log.d("WINFIELD","mGraphUpdated");
+                        //Log.d("WINFIELD","mGraphUpdated");
                         //Update Fuel Economy Values Here
                         //Update Speed Values Here
                         //Update Fuel Consumption Values here
