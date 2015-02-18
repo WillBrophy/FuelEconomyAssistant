@@ -2,6 +2,7 @@ package com.example.fueleconomyassistant;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.UiModeManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -14,6 +15,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -66,6 +68,23 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String colorScheme = prefs.getString("color_scheme_pref", "0");
+        UiModeManager manager = (UiModeManager) getSystemService(Context.UI_MODE_SERVICE);
+        manager.enableCarMode(0);
+        if(colorScheme.equals("1")){
+//            setTheme(android.R.style.Theme_Holo);
+            Log.d("WILL", "night");
+            manager.setNightMode(UiModeManager.MODE_NIGHT_YES);
+        }else if(colorScheme.equals("2")){
+//            setTheme(android.R.style.Theme_Holo_Light);
+            Log.d("WILL", "day");
+            manager.setNightMode(UiModeManager.MODE_NIGHT_NO);
+        }else{
+            Log.d("WILL", "auto");
+            manager.setNightMode(UiModeManager.MODE_NIGHT_AUTO);
+        }
+        setTheme(R.style.ModeTheme);
         setContentView(R.layout.activity_main);
         mSettingsButton = (Button) findViewById(R.id.settings_button);
         mMapButton = (Button) findViewById(R.id.map_button);
@@ -163,7 +182,7 @@ public class MainActivity extends Activity {
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
         //String s = "" + mService.getConfirmationString();
         //Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
-       // Log.d("s", "Intent Created and Service Bound");
+        Log.d("s", "Intent Created and Service Bound");
     }
 
     @Override
@@ -187,19 +206,11 @@ public class MainActivity extends Activity {
     }
 
     private void updateValues() {
-<<<<<<< HEAD
-       // Log.d("WINFIELD","UPDATEVALUES CALLED");
-        if(runViewUpdate){
-            //Log.d("WINFIELD","runViewUpdate TRUE");
-        }else{
-            //Log.d("WINFIELD","runViewUpdate FALSE");
-=======
         Log.d("WINFIELD", "UPDATEVALUES CALLED");
         if (runViewUpdate) {
             Log.d("WINFIELD", "runViewUpdate TRUE");
         } else {
             Log.d("WINFIELD", "runViewUpdate FALSE");
->>>>>>> 4abbff989e4391ea007c091ec3f76cb95627e23f
         }
         new Thread(new Runnable() {
             public void run() {
@@ -211,30 +222,6 @@ public class MainActivity extends Activity {
                         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
                         MainActivity.this.runOnUiThread(new Runnable() {
                             @Override
-<<<<<<< HEAD
-                            public void run(){
-                        final String dataToGraph = prefs.getString("graph_data_pref", "0");
-                        final String units = prefs.getString("units_pref", "0");
-                        if(!dataToGraph.equals( mPreviousDataGraphed) || !units.equals(mPreviousUnits)) {
-                            mGraph.removeAllSeries();
-                            if(units.equals("0")){
-                                mSpeedTitle.setText("Speed(km/h)");
-                                mEconomyTitle.setText("Economy(L/100km)");
-                            }else{
-                                mSpeedTitle.setText("Speed(mph)");
-                                mEconomyTitle.setText("Economy(mpg)");
-                            }
-                            if (dataToGraph.equals("0")) {
-                                mGraph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter(){
-                                    @Override
-                                    public String formatLabel(double value, boolean isValueX) {
-                                        if (isValueX) {
-                                            return super.formatLabel((int) value, isValueX);
-                                        } else {
-                                            // show currency for y values
-                                            return super.formatLabel(value, isValueX);
-                                        }
-=======
                             public void run() {
                                 final String dataToGraph = prefs.getString("graph_data_pref", "0");
                                 final String units = prefs.getString("units_pref", "0");
@@ -253,7 +240,6 @@ public class MainActivity extends Activity {
                                     } else {
 //                                        mGraphTitle.setText("Economy(mpg)");
                                         mGraph.addSeries(mImperialFuelEconomySeries);
->>>>>>> 4abbff989e4391ea007c091ec3f76cb95627e23f
                                     }
                                 } else if (dataToGraph.equals("1")) {
                                     divider = 1.0;
@@ -284,21 +270,6 @@ public class MainActivity extends Activity {
                                         }
                                     }
                                 });
-<<<<<<< HEAD
-                                mGraphTitle.setText("RPM x1000");
-                                mGraph.addSeries(mRpmSeries);
-                            }
-                        }
-                        mPreviousDataGraphed = dataToGraph;
-                        mPreviousUnits = units;
-
-                    //clear graph if the graphed data has changed
-                        //Log.d("WINFIELD","Data to graph: " + dataToGraph);
-                    //preform date calculations
-                        final long currentTime = new Date().getTime();
-                        long oldestTime = currentTime - 5*60*1000;
-                    //Update Rpm Values Here
-=======
 
                                 //}
                                 mPreviousDataGraphed = dataToGraph;
@@ -310,7 +281,6 @@ public class MainActivity extends Activity {
                                 final long currentTime = new Date().getTime();
                                 long oldestTime = currentTime - 5 * 60 * 1000;
                                 //Update Rpm Values Here
->>>>>>> 4abbff989e4391ea007c091ec3f76cb95627e23f
 
 
                                 //mEngine.setText("" + (int) (currentDataFinal.get(currentDataFinal.size() - 1).getValue()));
@@ -354,11 +324,7 @@ public class MainActivity extends Activity {
                                 mMetricSpeedSeries.appendData(currentMetSpeedPoint, true, 500);
                             }
                         });
-<<<<<<< HEAD
-                        //Log.d("WINFIELD","mGraphUpdated");
-=======
                         Log.d("WINFIELD", "mGraphUpdated");
->>>>>>> 4abbff989e4391ea007c091ec3f76cb95627e23f
                         //Update Fuel Economy Values Here
                         //Update Speed Values Here
                         //Update Fuel Consumption Values here
