@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -56,6 +57,7 @@ public class ObdDataCollectionService extends Service {
     private FuelConsumptionRateObdCommand mFuelConsumptionCommand;
 
     public void beginTestModeCollection(){
+        mCollectionStartTime = new Date().getTime();
         mRpmHistory = new ArrayList<ObdDataPoint>();
         final Random generator = new Random();
         new Thread(new Runnable() {
@@ -63,14 +65,26 @@ public class ObdDataCollectionService extends Service {
             public void run() {
                 while(true){
                     try {
-                        Thread.sleep(500);
+                        Thread.sleep(100);
                         mRpmHistory.add(new ObdDataPoint(new Date(), generator.nextDouble()*5000));
+                        mMetricFuelEconomyHistory.add(new ObdDataPoint(new Date(), generator.nextDouble()*10));
+                        mImperialFuelEconomyHistory.add(new ObdDataPoint(new Date(), generator.nextDouble()*50));
+                        mMetricSpeedHistory.add(new ObdDataPoint(new Date(), generator.nextDouble()*100*(5/3)));
+                        mImperialSpeedHistory.add(new ObdDataPoint(new Date(), generator.nextDouble()*100));
+                        mFuelLevel = new ObdDataPoint(new Date(), generator.nextDouble());
+
+                        Log.d("WINFIELD", "Added new test points");
                     }catch(Exception e){
 
                     }
                 }
             }
         }).start();
+    }
+    Long mCollectionStartTime;
+
+    public Long getCollectionStartTime() {
+        return mCollectionStartTime;
     }
 
     public void beginPlxCollection(BluetoothSocket incomingSocket){
@@ -106,8 +120,8 @@ public class ObdDataCollectionService extends Service {
                             mFuelEconomyCommand.run(mSocket.getInputStream(), mSocket.getOutputStream());
                             mImperialFuelEconomyHistory.add(new ObdDataPoint(new Date(), (double) mFuelEconomyCommand.getMilesPerUSGallon()));
                             mMetricFuelEconomyHistory.add(new ObdDataPoint(new Date(), (double) mFuelEconomyCommand.getLitersPer100Km()));
-                            mFuelConsumptionCommand.run(mSocket.getInputStream(), mSocket.getOutputStream());
-                            mMetricFuelConsumptionHistory.add(new ObdDataPoint(new Date(), mFuelConsumptionCommand.getLitersPerHour()));
+                           // mFuelConsumptionCommand.run(mSocket.getInputStream(), mSocket.getOutputStream());
+                           //mMetricFuelConsumptionHistory.add(new ObdDataPoint(new Date(), mFuelConsumptionCommand.getLitersPerHour()));
                             mFuelLevelObdCommand.run(mSocket.getInputStream(), mSocket.getOutputStream());
                             mFuelLevel = new ObdDataPoint(new Date(), mFuelLevelObdCommand.getFuelLevel());
                         }
