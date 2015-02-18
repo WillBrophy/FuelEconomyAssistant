@@ -296,31 +296,36 @@ public class MainActivity extends Activity {
                                 mEngine.setText("" + (int) (rpmData.get(rpmData.size() - 1).getValue()));
                                 //if(dataToGraph == "2") {
                                 final DataPoint currentRpmPoint = new DataPoint((double) (rpmData.get(rpmData.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, (double) rpmData.get(rpmData.size() - 1).getValue());
-                                mRpmSeries.appendData(currentRpmPoint, true, 500);
+                                if(mRpmSeries.getHighestValueX() < currentRpmPoint.getX())
+                                    mRpmSeries.appendData(currentRpmPoint, true, 500);
                                 //}
                                 //Metric Fuel Economy Code
                                 ArrayList<ObdDataPoint> metricFuelData = mService.getMetricFuelEconomyHistory();
                                 mEconomy.setText("" + (int) (metricFuelData.get(metricFuelData.size() - 1).getValue()));
                                 final DataPoint currentMetFuelPoint = new DataPoint((double) (metricFuelData.get(metricFuelData.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, (double) metricFuelData.get(metricFuelData.size() - 1).getValue());
-                                mMetricFuelEconomySeries.appendData(currentMetFuelPoint, true, 500);
+                                if(mMetricFuelEconomySeries.getHighestValueX() < currentMetFuelPoint.getX())
+                                    mMetricFuelEconomySeries.appendData(currentMetFuelPoint, true, 500);
                                 //}
                                 //Imperial Fuel Economy Code
                                 ArrayList<ObdDataPoint> imperialFuelData = mService.getImperialFuelEconomyHistory();
                                 mEconomy.setText("" + (int) (imperialFuelData.get(imperialFuelData.size() - 1).getValue()));
                                 final DataPoint currentImpFuelPoint = new DataPoint((double) (imperialFuelData.get(imperialFuelData.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, (double) imperialFuelData.get(imperialFuelData.size() - 1).getValue());
-                                mImperialFuelEconomySeries.appendData(currentImpFuelPoint, true, 500);
+                                if(mImperialFuelEconomySeries.getHighestValueX() < currentImpFuelPoint.getX())
+                                    mImperialFuelEconomySeries.appendData(currentImpFuelPoint, true, 500);
                                 //
                                 //Imperial Speed code
                                 ArrayList<ObdDataPoint> imperialSpeedData = mService.getImperialSpeedHistory();
                                 mEconomy.setText("" + (int) (imperialSpeedData.get(imperialSpeedData.size() - 1).getValue()));
                                 final DataPoint currentImpSpeedPoint = new DataPoint((double) (imperialSpeedData.get(imperialSpeedData.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, (double) imperialSpeedData.get(imperialSpeedData.size() - 1).getValue());
-                                mImperialSpeedSeries.appendData(currentImpSpeedPoint, true, 500);
+                                if(mImperialSpeedSeries.getHighestValueX() < currentImpSpeedPoint.getX())
+                                    mImperialSpeedSeries.appendData(currentImpSpeedPoint, true, 500);
 
                                 //Metric Speed Code
                                 ArrayList<ObdDataPoint> metricSpeedData = mService.getMetricSpeedHistory();
                                 mEconomy.setText("" + (int) (metricSpeedData.get(metricSpeedData.size() - 1).getValue()));
                                 final DataPoint currentMetSpeedPoint = new DataPoint((double) (metricSpeedData.get(metricSpeedData.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, (double) metricSpeedData.get(metricSpeedData.size() - 1).getValue());
-                                mMetricSpeedSeries.appendData(currentMetSpeedPoint, true, 500);
+                                if(mMetricSpeedSeries.getHighestValueX() < currentMetSpeedPoint.getX())
+                                    mMetricSpeedSeries.appendData(currentMetSpeedPoint, true, 500);
                             }
                         });
                         Log.d("WINFIELD", "mGraphUpdated");

@@ -85,6 +85,7 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
     ObdDataCollectionService mService;
     private boolean mBound;
     private boolean runViewUpdate;
+    private boolean updatingValues;
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -166,8 +167,8 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
                 // We've bound to the Service, cast the IBinder and get Service instance
                 ObdDataCollectionService.LocalBinder binder = (ObdDataCollectionService.LocalBinder) service;
                 mService = binder.getService();
-                mService.beginTestModeCollection();
-                runViewUpdate = true;
+                //mService.beginTestModeCollection();
+                updatingValues = true;
                 updateValues();
                 mBound = true;
             }
@@ -184,26 +185,39 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
     public void updateValues(){
         new Thread(new Runnable() {
             public void run() {
-                try{
-                    Thread.sleep(10000);
-                }catch(Exception e){
-                    e.printStackTrace();
-                }
-                FuelMapActivity.this.runOnUiThread(new Runnable(){
-                    @Override
-                    public void run() {
-                        ObdDataPoint currentLevel = mService.getFuelLevel();
-                        String s = currentLevel.getValue() + "%";
-                        mFuelLevelView.setText(s);
+                while (updatingValues) {
+                    try {
+
+
+                        FuelMapActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                ObdDataPoint currentLevel = mService.getFuelLevel();
+                                String s = String.format("%.2f", currentLevel.getValue() * 100) + "%";
+                                mFuelLevelView.setText(s);
+                            }
+                        });
+                        Thread.sleep(10000);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                });
+                }
             }
         }).start();
 
 
     }
 
-
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Unbind from the service
+        runViewUpdate = false;
+        if (mBound) {
+            unbindService(mConnection);
+            mBound = false;
+        }
+    }
 
     @Override
     protected void onPause() {

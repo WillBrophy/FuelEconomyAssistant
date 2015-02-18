@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -70,6 +69,7 @@ public class ObdDataCollectionService extends Service {
         mMetricSpeedHistory.add(new ObdDataPoint(new Date(), 0));
         mImperialSpeedHistory = new ArrayList<ObdDataPoint>();
         mImperialSpeedHistory.add(new ObdDataPoint(new Date(), 0));
+        mFuelLevel = new ObdDataPoint(new Date(),0.0);
         final Random generator = new Random();
         new Thread(new Runnable() {
             @Override
@@ -83,7 +83,7 @@ public class ObdDataCollectionService extends Service {
                         mMetricSpeedHistory.add(new ObdDataPoint(new Date(), generator.nextDouble()*100*(5/3)));
                         mImperialSpeedHistory.add(new ObdDataPoint(new Date(), generator.nextDouble()*100));
                         mFuelLevel = new ObdDataPoint(new Date(), generator.nextDouble());
-                        Log.d("WINFIELD", "Added new test points");
+                        //Log.d("WINFIELD", "Added new test points");
                     }catch(Exception e){
 
                     }
