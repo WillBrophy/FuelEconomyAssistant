@@ -212,7 +212,7 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
     protected void onStop() {
         super.onStop();
         // Unbind from the service
-        runViewUpdate = false;
+        updatingValues = false;
         if (mBound) {
             unbindService(mConnection);
             mBound = false;
