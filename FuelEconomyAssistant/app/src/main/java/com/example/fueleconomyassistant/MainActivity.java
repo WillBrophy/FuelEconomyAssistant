@@ -189,15 +189,17 @@ public class MainActivity extends Activity {
         }else{
             Log.d("WINFIELD","runViewUpdate FALSE");
         }
-        new Thread(new Runnable() {
+       new Thread(new Runnable() {
             public void run() {
                 //Let the thread sleep to compensate for graph interval
                  ArrayList<ObdDataPoint> currentData;
                 while (runViewUpdate){
                     try {
                         Thread.sleep(1000);
-                        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-
+                        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+                        MainActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run(){
                         final String dataToGraph = prefs.getString("graph_data_pref", "0");
                         final String units = prefs.getString("units_pref", "0");
                         //if(!dataToGraph.equals( mPreviousDataGraphed) || !units.equals(mPreviousUnits)) {
@@ -272,12 +274,10 @@ public class MainActivity extends Activity {
                         final long currentTime = new Date().getTime();
                         long oldestTime = currentTime - 5*60*1000;
                     //Update Rpm Values Here
-                        currentData = mService.getRpmHistory();
-                        final ArrayList<ObdDataPoint> currentDataFinal = currentData;
+
+
                         //mEngine.setText("" + (int) (currentDataFinal.get(currentDataFinal.size() - 1).getValue()));
-                        MainActivity.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run(){
+
                                 //set graph bounds
                                 mGraph.getViewport().setXAxisBoundsManual(true);
                                 mGraph.getViewport().setMaxX((new Date().getTime() - mService.getCollectionStartTime()) / 1000);
@@ -285,9 +285,11 @@ public class MainActivity extends Activity {
                                 mGraph.getViewport().setScrollable(true);
 
                                     //RPM Code
-                                    mEngine.setText("" + (int) (currentDataFinal.get(currentDataFinal.size() - 1).getValue()));
+                                ArrayList<ObdDataPoint> rpmData = mService.getRpmHistory();
+                                mEconomy.setText("" + (int) (rpmData.get(rpmData.size() - 1).getValue()));
+                                    mEngine.setText("" + (int) (rpmData.get(rpmData.size() - 1).getValue()));
                                 //if(dataToGraph == "2") {
-                                    final DataPoint currentRpmPoint = new DataPoint((double) (currentDataFinal.get(currentDataFinal.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, (double) currentDataFinal.get(currentDataFinal.size() - 1).getValue());
+                                    final DataPoint currentRpmPoint = new DataPoint((double) (rpmData.get(rpmData.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, (double) rpmData.get(rpmData.size() - 1).getValue());
                                     mRpmSeries.appendData(currentRpmPoint, true, 500);
                                 //}
                                     //Metric Fuel Economy Code
