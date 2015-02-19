@@ -66,7 +66,7 @@ public class MainActivity extends Activity {
     private LineGraphSeries<DataPoint> mMetricSpeedSeries;
     private String mPreviousUnits;
     private int mEconomyGoal;
-    private int mRPMGoal = 5000;
+    private int mRPMGoal = 2000;
     private int mSpeedGoal = 55;
 
     @Override
@@ -157,7 +157,7 @@ public class MainActivity extends Activity {
 
     //---------------------------------------------Code To Bind to OBD Service------------------------------
     //----------------------------------------------------------------------------------------------
-    ObdDataCollectionService mService;
+    public static ObdDataCollectionService mService;
 
 
     private void startBluetoothService() {
@@ -210,7 +210,7 @@ public class MainActivity extends Activity {
     }
 
     private void updateValues() {
-        Log.d("WINFIELD", "UPDATEVALUES CALLED");
+        //Log.d("WINFIELD", "UPDATEVALUES CALLED");
         if (runViewUpdate) {
             Log.d("WINFIELD", "runViewUpdate TRUE");
         } else {
@@ -291,7 +291,7 @@ public class MainActivity extends Activity {
                                 //set graph bounds
                                 mGraph.getViewport().setXAxisBoundsManual(true);
                                 mGraph.getViewport().setMaxX((new Date().getTime() - mService.getCollectionStartTime()) / 1000);
-                                mGraph.getViewport().setMinX(((new Date().getTime() - mService.getCollectionStartTime()) / 1000) - 15);
+                                mGraph.getViewport().setMinX(((new Date().getTime() - mService.getCollectionStartTime()) / 1000) - 30);
                                 mGraph.getViewport().setScrollable(true);
 
                                 //RPM Code
@@ -356,7 +356,7 @@ public class MainActivity extends Activity {
                         //Update Fuel Economy Values Here
                         //Update Speed Values Here
                         //Update Fuel Consumption Values here
-                        Thread.sleep(1500);
+                        Thread.sleep(500);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

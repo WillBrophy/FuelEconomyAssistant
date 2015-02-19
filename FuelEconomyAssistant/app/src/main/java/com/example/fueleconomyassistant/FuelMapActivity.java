@@ -151,7 +151,7 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
 //                startActivity(intent);
             }
         });
-        startTestService();
+//        startTestService();
 //		MapView mv = (MapView) findViewById(R.id.mapView);
 
 	}
@@ -175,6 +175,7 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
                 updatingValues = true;
                 updateValues();
                 mBound = true;
+                Log.d("WILL", "service connected");
             }
 
             @Override
@@ -192,14 +193,16 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
                 while (updatingValues) {
                     try {
 
-
+                        Log.d("WILL", "looping");
                         FuelMapActivity.this.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                ObdDataPoint currentLevel = mService.getFuelLevel();
+                                ObdDataPoint currentLevel = MainActivity.mService.getFuelLevel();
                                 if(currentLevel != null){
-                                    String s = String.format("%.2f", currentLevel.getValue() * 100) + "%";
+                                    String s = String.format("%.2f", currentLevel.getValue()) + "%";
                                     mFuelLevelView.setText(s);
+                                }else{
+                                    Log.d("WILL", "current level was null");
                                 }
                             }
                         });
@@ -219,10 +222,10 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
         super.onStop();
         // Unbind from the service
         updatingValues = false;
-        if (mBound) {
-            unbindService(mConnection);
-            mBound = false;
-        }
+//        if (mBound) {
+//            unbindService(mConnection);
+//            mBound = false;
+//        }
     }
 
     @Override
@@ -243,6 +246,8 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
         if (mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
             startLocationUpdates();
         }
+        updatingValues = true;
+        updateValues();
     }
     @Override
     public void onConnected(Bundle connectionHint) {
