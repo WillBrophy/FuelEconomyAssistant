@@ -56,6 +56,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 //import com.google.android.maps.MapView;
 
@@ -69,6 +71,7 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
     private static final String API_KEY = "AIzaSyDCpu4StAm560O5yzLDfV5Iin2_eyZCrHQ";
     private static final boolean PRINT_AS_STRING = false;
     private static final String GAS_STATIONS_TYPE = "gas_station";
+    private String preferedFueld = "";
 
     private TextView mFuelLevelView;
     private Button mBackButton;
@@ -92,6 +95,7 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
 		super.onCreate(savedInstanceState);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String colorScheme = prefs.getString("color_scheme_pref", "0");
+        preferedFueld = prefs.getString("prefered_fuel_pref", "");
         UiModeManager manager = (UiModeManager) getSystemService(Context.UI_MODE_SERVICE);
         manager.enableCarMode(0);
         if(colorScheme.equals("1")){
@@ -193,8 +197,10 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
                             @Override
                             public void run() {
                                 ObdDataPoint currentLevel = mService.getFuelLevel();
-                                String s = String.format("%.2f", currentLevel.getValue() * 100) + "%";
-                                mFuelLevelView.setText(s);
+                                if(currentLevel != null){
+                                    String s = String.format("%.2f", currentLevel.getValue() * 100) + "%";
+                                    mFuelLevelView.setText(s);
+                                }
                             }
                         });
                         Thread.sleep(10000);
@@ -427,6 +433,11 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
             Collections.sort(mPlaces, new Comparator<Place>() {
                 @Override
                 public int compare(Place place, Place place2) {
+                    if(place.name.contains(preferedFueld) && !place2.name.contains(preferedFueld)){
+                        return -1;
+                    }else if(!place.name.contains(preferedFueld) && place2.name.contains(preferedFueld)){
+                        return 1;
+                    }
                     float[] dist1 = new float[1];
                     float[] dist2 = new float[1];
                     Location.distanceBetween(mLastLocation.getLatitude(), mLastLocation.getLongitude(), place.geometry.location.lat, place.geometry.location.lng, dist1);
@@ -435,8 +446,19 @@ public class FuelMapActivity extends Activity implements OnMapReadyCallback, Goo
                 }
             });
             mAdapter.notifyDataSetChanged();
-            LatLngBounds bounds = builder.build();
-            mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 20));
+            final LatLngBounds bounds = builder.build();
+            Timer timer = new Timer();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    FuelMapActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 20));
+                        }
+                    });
+                }
+            }, 1500);
         }
         private BitmapDescriptor getMarkerIcon(int i){
             Bitmap.Config conf = Bitmap.Config.ARGB_8888;

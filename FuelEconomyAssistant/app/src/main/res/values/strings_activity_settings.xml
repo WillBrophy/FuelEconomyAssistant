@@ -25,11 +25,13 @@
         <item>Mobile</item>
         <item>Shell</item>
         <item>BP</item>
+        <item>Kroger</item>
     </string-array>
     <string-array name="prefered_fuel_list_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
+        <item>Mobile</item>
+        <item>Shell</item>
+        <item>BP</item>
+        <item>Kroger</item>
     </string-array>
     <string-array name="color_scheme_list_titles">
         <item>Night</item>
