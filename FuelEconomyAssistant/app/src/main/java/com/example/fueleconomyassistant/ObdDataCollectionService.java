@@ -100,18 +100,28 @@ public class ObdDataCollectionService extends Service {
     public void beginPlxCollection(BluetoothSocket incomingSocket){
         //Store the socket
         mSocket = incomingSocket;
-
         //Instantiate Arraylists for Record Storage
+        mCollectionStartTime = new Date().getTime();
         mRpmHistory = new ArrayList<ObdDataPoint>();
+        mRpmHistory.add(new ObdDataPoint(new Date(), 0));
+        mMetricFuelEconomyHistory = new ArrayList<ObdDataPoint>();
+        mMetricFuelEconomyHistory.add(new ObdDataPoint(new Date(), 0));
+        mImperialFuelEconomyHistory = new ArrayList<ObdDataPoint>();
+        mImperialFuelEconomyHistory.add(new ObdDataPoint(new Date(), 0));
+        mMetricSpeedHistory = new ArrayList<ObdDataPoint>();
+        mMetricSpeedHistory.add(new ObdDataPoint(new Date(), 0));
+        mImperialSpeedHistory = new ArrayList<ObdDataPoint>();
+        mImperialSpeedHistory.add(new ObdDataPoint(new Date(), 0));
+        mFuelLevel = new ObdDataPoint(new Date(),0.0);
         new Thread(new Runnable() {
             public void run() {
                 //Let the thread sleep while the car computer prepares new data
                 while(true) {
                     try {
-                        Thread.sleep(1500);
-                        if(testMode){
 
-                        }else {
+                        //if(testMode){
+
+                        //}else {
                             new EchoOffObdCommand().run(mSocket.getInputStream(), mSocket.getOutputStream());
                             new LineFeedOffObdCommand().run(mSocket.getInputStream(), mSocket.getOutputStream());
                             new TimeoutObdCommand(1000).run(mSocket.getInputStream(), mSocket.getOutputStream());
@@ -134,7 +144,9 @@ public class ObdDataCollectionService extends Service {
                            //mMetricFuelConsumptionHistory.add(new ObdDataPoint(new Date(), mFuelConsumptionCommand.getLitersPerHour()));
                             mFuelLevelObdCommand.run(mSocket.getInputStream(), mSocket.getOutputStream());
                             mFuelLevel = new ObdDataPoint(new Date(), mFuelLevelObdCommand.getFuelLevel());
-                        }
+
+                            Thread.sleep(500);
+                        //}
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
