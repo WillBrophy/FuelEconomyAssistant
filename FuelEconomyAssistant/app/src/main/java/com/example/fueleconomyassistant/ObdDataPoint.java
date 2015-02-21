@@ -1,5 +1,7 @@
 package com.example.fueleconomyassistant;
 
+import com.jjoe64.graphview.series.DataPoint;
+
 import java.util.Date;
 
 /**
@@ -14,12 +16,16 @@ public class ObdDataPoint{
         this.mValue = value;
     }
 
-    public long getTimeCollected() {
-        return mTimeCollected.getTime();
+    public double getTimeCollected()  {
+         return (double) mTimeCollected.getTime();
     }
 
     public double getValue() {
         return mValue;
+    }
+
+    public DataPoint convertToGraphingDataPoint(ObdDataCollectionService service){
+        return new DataPoint((this.getTimeCollected() - service.getCollectionStartTime())/1000,this.getValue());
     }
 
     @Override

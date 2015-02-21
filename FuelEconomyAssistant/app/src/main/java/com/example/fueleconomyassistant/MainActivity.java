@@ -40,6 +40,7 @@ public class MainActivity extends BaseActivity {
 
     private static int mRPMGoal = 2000;
     private static int mSpeedGoal = 55;
+    private static int mMaximumDataPoints = 500;
 
     private Button mSettingsButton;
     private Button mMapButton;
@@ -173,7 +174,7 @@ public class MainActivity extends BaseActivity {
                         final String dataToGraph = prefs.getString("graph_data_pref", "0");
                         final String units = prefs.getString("units_pref", "0");
                         boolean isMetric = units.equals("0");
-                        if (!dataToGraph.equals(mPreviousDataGraphed) || !units.equals(mPreviousUnits)) {
+                        if(!dataToGraph.equals(mPreviousDataGraphed) || !units.equals(mPreviousUnits)) {
                             mGraph.removeAllSeries();
                             updateTitleViews(isMetric);
                             final double dataFormatDivider = (dataToGraph.equals("2") ? 1000.0 : 1.0);
@@ -207,7 +208,7 @@ public class MainActivity extends BaseActivity {
                 });
             }
         };
-        mUpdateTimer.scheduleAtFixedRate(t, 0, 500);
+        mUpdateTimer.scheduleAtFixedRate(t, 0, 250);
     }
 
     private void updateTitleViews(boolean isMetric){
@@ -253,7 +254,7 @@ public class MainActivity extends BaseActivity {
         mEngine.setBackgroundColor(Color.argb(175, (int) (255 * goodness), (int) (255 * (1 - goodness)), 0));
         final DataPoint currentRpmPoint = new DataPoint((double) (rpmData.get(rpmData.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, rpmData.get(rpmData.size() - 1).getValue());
         if (mRpmSeries.getHighestValueX() < currentRpmPoint.getX())
-            mRpmSeries.appendData(currentRpmPoint, true, 500);
+            mRpmSeries.appendData(currentRpmPoint, true, mMaximumDataPoints);
     }
 
     private void updateSpeedValues(boolean isMetric){
@@ -269,12 +270,12 @@ public class MainActivity extends BaseActivity {
             mSpeed.setText("" + (int) (metricSpeedData.get(metricSpeedData.size() - 1).getValue()));
             final DataPoint currentMetSpeedPoint = new DataPoint((double) (metricSpeedData.get(metricSpeedData.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, metricSpeedData.get(metricSpeedData.size() - 1).getValue());
             if (mMetricSpeedSeries.getHighestValueX() < currentMetSpeedPoint.getX())
-                mMetricSpeedSeries.appendData(currentMetSpeedPoint, true, 500);
+                mMetricSpeedSeries.appendData(currentMetSpeedPoint, true, mMaximumDataPoints);
         } else {
             mSpeed.setText("" + (int) (imperialSpeedData.get(imperialSpeedData.size() - 1).getValue()));
             final DataPoint currentImpSpeedPoint = new DataPoint((double) (imperialSpeedData.get(imperialSpeedData.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, imperialSpeedData.get(imperialSpeedData.size() - 1).getValue());
             if (mImperialSpeedSeries.getHighestValueX() < currentImpSpeedPoint.getX())
-                mImperialSpeedSeries.appendData(currentImpSpeedPoint, true, 500);
+                mImperialSpeedSeries.appendData(currentImpSpeedPoint, true, mMaximumDataPoints);
         }
     }
 
@@ -292,13 +293,50 @@ public class MainActivity extends BaseActivity {
             mEconomy.setText("" + (int) (metricFuelData.get(metricFuelData.size() - 1).getValue()));
             final DataPoint currentMetFuelPoint = new DataPoint((double) (metricFuelData.get(metricFuelData.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, metricFuelData.get(metricFuelData.size() - 1).getValue());
             if (mMetricFuelEconomySeries.getHighestValueX() < currentMetFuelPoint.getX())
-                mMetricFuelEconomySeries.appendData(currentMetFuelPoint, true, 500);
+                mMetricFuelEconomySeries.appendData(currentMetFuelPoint, true, mMaximumDataPoints);
         } else {
             mEconomy.setText("" + (int) (imperialFuelData.get(imperialFuelData.size() - 1).getValue()));
             final DataPoint currentImpFuelPoint = new DataPoint((double) (imperialFuelData.get(imperialFuelData.size() - 1).getTimeCollected() - mService.getCollectionStartTime()) / 1000, imperialFuelData.get(imperialFuelData.size() - 1).getValue());
             if (mImperialFuelEconomySeries.getHighestValueX() < currentImpFuelPoint.getX())
-                mImperialFuelEconomySeries.appendData(currentImpFuelPoint, true, 500);
+                mImperialFuelEconomySeries.appendData(currentImpFuelPoint, true, mMaximumDataPoints);
         }
+    }
+
+    //repopulate the series when the activity is resumed
+    public void rebuildSeries(){
+        MainActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mRpmSeries = new LineGraphSeries<DataPoint>();
+                mMetricFuelEconomySeries = new LineGraphSeries<DataPoint>();
+                mImperialFuelEconomySeries = new LineGraphSeries<DataPoint>();
+                mImperialSpeedSeries = new LineGraphSeries<DataPoint>();
+                mMetricSpeedSeries = new LineGraphSeries<DataPoint>();
+                ArrayList<ObdDataPoint> imperialFuelData = new ArrayList<ObdDataPoint>(mService.getImperialFuelEconomyHistory());
+                for (ObdDataPoint x : imperialFuelData) {
+                    mImperialFuelEconomySeries.appendData(x.convertToGraphingDataPoint(mService), true, mMaximumDataPoints);
+                }
+                ArrayList<ObdDataPoint> metricFuelData = new ArrayList<ObdDataPoint>(mService.getMetricFuelEconomyHistory());
+                for (ObdDataPoint x : metricFuelData) {
+                    mMetricFuelEconomySeries.appendData(x.convertToGraphingDataPoint(mService), true, mMaximumDataPoints);
+                }
+                ArrayList<ObdDataPoint> metricSpeedData = new ArrayList<ObdDataPoint>(mService.getMetricSpeedHistory());
+                for (ObdDataPoint x : metricSpeedData) {
+                    mMetricSpeedSeries.appendData(x.convertToGraphingDataPoint(mService), true, mMaximumDataPoints);
+                }
+                ArrayList<ObdDataPoint> imperialSpeedData = new ArrayList<ObdDataPoint>(mService.getImperialSpeedHistory());
+                for (ObdDataPoint x : imperialSpeedData) {
+                    mImperialSpeedSeries.appendData(x.convertToGraphingDataPoint(mService), true, mMaximumDataPoints);
+                }
+                ArrayList<ObdDataPoint> rpmData = new ArrayList<ObdDataPoint>(mService.getRpmHistory());
+                for (ObdDataPoint x : rpmData) {
+                    mRpmSeries.appendData(x.convertToGraphingDataPoint(mService), true, mMaximumDataPoints);
+                }
+                mPreviousDataGraphed = "-";
+                mPreviousUnits = "-";
+            }
+        });
+
     }
 
     //restart gui updater on resume
@@ -306,9 +344,12 @@ public class MainActivity extends BaseActivity {
     public void onRestart() {
         super.onRestart();
         mEngine.setText("--");
+        rebuildSeries();
         if(mUpdateTimer != null){
             stopUITimer();
         }
+
+
         updateValues();
     }
 
