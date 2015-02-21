@@ -420,8 +420,23 @@ public class MainActivity extends BaseActivity {
                     startBluetoothService();
 
                 } catch (IOException e) {
-                    Toast toast = Toast.makeText(getApplicationContext(), "Connection NOT Successful", Toast.LENGTH_LONG);
-                    toast.show();
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setMessage("Try again?").setTitle("Connection Failed");
+                    builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            //User Chose to Enable Bluetooth
+                            chooseBluetoothAdapter();
+                        }
+                    });
+                    builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User cancelled the dialog
+                            startTestService();
+
+                        }
+                    });
+                    AlertDialog dialog2 = builder.create();
+                    dialog2.show();
                 }
 
             }
@@ -460,9 +475,9 @@ public class MainActivity extends BaseActivity {
         }else{
             startTestService();
         }
-
-
     }
+
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -471,7 +486,11 @@ public class MainActivity extends BaseActivity {
             // Make sure the request was successful
             if (resultCode == RESULT_OK) {
                 chooseBluetoothAdapter();
+            }else{
+                Toast toast = Toast.makeText(getApplicationContext(), "Failed to enable Bluetooth", Toast.LENGTH_LONG);
+                toast.show();
             }
+
         }
     }
 

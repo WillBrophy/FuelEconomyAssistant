@@ -15,8 +15,8 @@
     <string name="back">Back</string>
     <string name="fuel_level">Fuel Level</string>
     <string name="obd_service_name">ObdDataCollection</string>
-    <string name="plx_dialog_message"> This device has Bluetooth capabilities. \n Enable Bluetooth and connect to a PLX Kiwi? \n (Must already be a paired device)</string>
-    <string name="plx_dialog_title">Use PLX Kiwi?</string>
+    <string name="plx_dialog_message"> Would you like to enable Bluetooth and connect to a PLX Kiwi? \n (Must already be a paired device!)</string>
+    <string name="plx_dialog_title">PLX Kiwi</string>
 
 
 </resources>

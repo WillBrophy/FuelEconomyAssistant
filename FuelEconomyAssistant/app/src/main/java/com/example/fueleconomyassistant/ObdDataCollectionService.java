@@ -151,7 +151,7 @@ public class ObdDataCollectionService extends Service {
                         //mMetricFuelConsumptionHistory.add(new ObdDataPoint(new Date(), mFuelConsumptionCommand.getLitersPerHour()));
 
 
-                        Thread.sleep(50);
+                        Thread.sleep(100);
                         //}
                     } catch (Exception e) {
                         e.printStackTrace();

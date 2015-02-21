@@ -15,7 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="left|center_vertical"
-            android:text="Economy (mgp)"
+            android:text="Economy (mpg)"
             android:textSize="24sp" />
 
         <TextView
@@ -24,7 +24,7 @@
             android:layout_height="wrap_content"
             android:background="@drawable/black_border"
             android:gravity="right|center_vertical"
-            android:text="34"
+            android:text="--"
             android:textSize="32sp" />
     </LinearLayout>
 
@@ -49,7 +49,7 @@
             android:layout_height="wrap_content"
             android:background="@drawable/black_border"
             android:gravity="right|center_vertical"
-            android:text="12"
+            android:text="--"
             android:textSize="32sp" />
     </LinearLayout>
 
@@ -74,7 +74,7 @@
             android:layout_height="wrap_content"
             android:background="@drawable/black_border"
             android:gravity="right|center_vertical"
-            android:text="2700"
+            android:text="--"
             android:textSize="32sp" />
     </LinearLayout>
 
